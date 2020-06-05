@@ -1,13 +1,13 @@
 # Domácí úloha č. 2
 
-<br>
+
 ## Situace
 
 Na oběžné dráze planety Mars létá sonda, která sbírá informace a fotografie od
 robotů pracujících na povrchu planety (viz úloha č.1). Získané informace se poté
 přenášejí ze sondy do řídícího centra na Zemi.
 
-<br>
+
 ## Úkoly
 
 Vaším úkolem je:
@@ -17,14 +17,14 @@ v jakém terénu se roboti nacházía
 
 1. provést upload nového firmwaru do sondy
 
-<br>
+
 ## Obecné schema komunikace
 
 Sonda komunikuje pomocí protokolu UDP a přijímá data na portu 4000.
 Proces běžící v sondě budeme nazývat serverem a proces,
 který se sondou komunikuje, klientem.
 
-<br>
+
 ### Formát paketu
 
 | identifikátor ‚spojení‘ | sekvenční číslo | číslo potvrzení  | příznak  | data   |
@@ -43,7 +43,7 @@ více souborů najednou),
 
 - data - přenášená data
 
-<br>
+
 Identifikátor spojení a sekvenční čísla se přenášejí v reprezentaci
 network byte order (big endian). Příklad:
 
@@ -52,21 +52,21 @@ network byte order (big endian). Příklad:
 | 1234      | 04D2h         | 04h D2h     |
 | 34566     | 8706h         | 8706h       |
 
-<br>
+
 ### Identifikátor spojení
 
 Identifikátor spojení je nenulové číslo. Při navazování spojení posílá klient
 identifikátor spojení nastavený na nulu. Při další komunikaci použije klient
 identifikátor spojení, který mu vrátí server v prvním paketu.
 
-<br>
+
 ## Příznaky
 
 |  číslo bitu | 7 | 6 | 5 | 4 | 3 |  2  |  1  |  0  |
 |-------------|---|---|---|---|---|-----|-----|-----|
 |  příznak    | - | - | - | - | - | SYN | FIN | RST |
 
-<br>
+
 
 | příznak | význam                                                                                                                                                                                                                                                                                                                                                                                                                                |   |   |   |
 |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|---|---|
@@ -78,7 +78,7 @@ identifikátor spojení, který mu vrátí server v prvním paketu.
 Jednotlivé příznaky (SYN, FIN, RST) nelze spolu kombinovat.
 
 
-<br>
+
 ### Sekvenční číslo a číslo potvrzení
 
 Sekvenční číslo je pořadové číslo prvního bytu v proudu posílaných dat.
@@ -90,7 +90,7 @@ proudu přijímaných dat. Potvrzuje zároveň všechny byty s nižším pořado
 
 Tato čísla nemají znaménko a mohou přetéct. Přetečení nemá na komunikaci vliv.
 
-<br>
+
 ### Data
 
 Délka dat je určena velikostí paketu mínus velikost hlavičky.
@@ -146,7 +146,7 @@ musí klient počkat na SYN paket s číslem spojení.
 Potom si také podle kódu příkazu (v datové části v odpovědi od serveru) může
 správně přiřadit čísla spojení.*
 
-<br>
+
 ### Přenos dat
 
 Data lze posílat až po navázání spojení.
@@ -189,7 +189,7 @@ Pokud vysílač přijme 3x po sobě stejné potvrzovací číslo, odešle ihned 
 s maximálním možným množstvím dat od pořadového čísla shodného s přijatým
 potvrzovacím číslem a nastaví T na novou hodnotu.
 
-<br>
+
 ### Ukončení spojení
 
 Pokud vysílač odešle celý soubor a má všechna odeslaná data potvrzená,
@@ -206,7 +206,7 @@ Pokud dojde 20x po sobě k opakovanému odvysílání paketu se stejným sekven�
 je spojení přerušeno, klient musí vypsat chybu při přenosu.
 To platí i při uzavírání spojení, kdy je odesílán příznak FIN.
 
-<br>
+
 ### Příkazy
 
 #### příkaz 01h - fotografie okolí
@@ -251,7 +251,7 @@ což nesmí mít na komunikaci vliv.
 
 [Příklady komunikace jsou na zvláštní stránce.](PrikladyKomunikace.md)
 
-<br>
+
 ## Chybovost sítě
 
 Možné chyby na síti:
@@ -302,7 +302,7 @@ _<server>_ je jméno nebo IP adresa serveru a _<firmware>_ je soubor s novým fi
 
 Příklad volání: `java robot.Robot 81.25.17.115 /data/firmware.bin`
 
-<br>
+
 ## Testování
 
 Pro testování můžete použít testovací obraz pro virtualizační systém Virtualbox.
@@ -326,7 +326,7 @@ foto.png je cesta k fotografii a firmware.bin je akceptovaný firmware.
 
 - Nebo můžete spustit server skriptem *Spust_server_pro_ulohu_c_2*, nebo *Spust_server_pro_ulohu_c_2_64bit.*
 
-<br>
+
 ## Ke stažení
 
 | soubor                                                                          | odkaz                     |
@@ -334,7 +334,7 @@ foto.png je cesta k fotografii a firmware.bin je akceptovaný firmware.
 | Referenční řešení - server + klient (binárky pro linux 32bit i 64bit a windows) | *kareludp.zip*            |
 | Testovací obraz pro Virtualbox                                                  | *bi-psi-core-6.1.ova.zip* |
 
-<br>
+
 ## Termín a způsob odevzdání
 
 Úlohu je nutné nahrát na odevzdávací server [PSI bouda](https://bouda.fit.cvut.cz)

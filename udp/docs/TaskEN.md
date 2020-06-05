@@ -1,6 +1,6 @@
 # Homework #2 - UDP client
 
-<br>
+
 ## Situation
 
 A probe is flying in orbit around Mars to collect information and
@@ -8,7 +8,7 @@ photos from the robots working at the planet surface (see Task 1).
 The information obtained is then transmitted from the probe
 to the control center on the Earth.
 
-<br>
+
 ## Tasks
 
 Your task is:
@@ -18,14 +18,14 @@ scientists can find out the terrain where the robots are
 
 1. upload new firmware to probe
 
-<br>
+
 ## General communication scheme
 
 The probe communicates via UDP and receives data on port 4000.
 The process running on the probe is called the server and
 the process that communicates with the probe is the client.
 
-<br>
+
 ### Packet format
 
 | identifier of ‚connection‘ | sequence number | acknowledgment number  | flag | data   |
@@ -52,7 +52,7 @@ network byte order representation (big endian). Example:
 | 34566     | 8706h         | 8706h          |
 
 
-<br>
+
 ### Identifier of ‚connection‘
 
 Identifier of ‚connection‘ is non-zero number.
@@ -65,7 +65,7 @@ that the server returns to it in the first packet.
 |-------------|---|---|---|---|---|-----|-----|-----|
 |  flag       | - | - | - | - | - | SYN | FIN | RST |
 
-<br>
+
 
 | flag | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,7 +75,7 @@ that the server returns to it in the first packet.
 
 Individual flags (SYN, FIN, RST) cannot be combined.
 
-<br>
+
 ### Sequence number and acknowledgment number
 
 Sequence number is the sequential number of the first byte in the stream of sent data.
@@ -88,7 +88,7 @@ It also confirms all bytes with a lower sequential number.
 
 These numbers don’t have a sign and can overflow. Overflow does not affect communication.
 
-<br>
+
 ### Data
 
 The data length is determined by the packet size minus the header size.
@@ -193,7 +193,7 @@ If the transmitter receives the same acknowledgment number 3 times in a row,
 it immediately sends a packet with the maximum amount of data starting
 from the received acknowledgment number and sets T to a new value.
 
-<br>
+
 ### Connection termination
 
 If the transmitter sends the entire file and has all the sent data
@@ -228,14 +228,14 @@ When the client receives the first packet with the SYN flag set from the server,
 it begins to send the content of the firmware file.
 No additional information, such as file name or length, is sent.
 
-<br>
+
 ### Receiving a wrong packet
 
 When a wrong packet is received, the receiver (both client and server) sends a RST packet. A wrong packet is a packet that:
 
 - does not contain a valid connection ID and does not have the SYN flag set
 
-- has no acknowledgment number in the interval <seq - window size, seq> where seq is the transmitter sequence number
+- has no acknowledgment number in the interval _<seq - window size, seq>_ where seq is the transmitter sequence number
 
 - has multiple flags set
 
@@ -245,7 +245,7 @@ When a wrong packet is received, the receiver (both client and server) sends a R
 
 Be careful, sequential and acknowledgment numbers may overflow, which must not affect the communication.
 
-<br>
+
 ### Examples of communication
 
 [Examples of communication are at this page.](ExamplesOfCommunication.md)
@@ -268,7 +268,7 @@ and the RST flag is sent and the connection is terminated.
 This error is not a problem when submitting the task
 (the transmission is repeated during the submission).
 
-<br>
+
 ## Requirements
 
 - the program must be stable and resistant to unexpected inputs
@@ -304,7 +304,7 @@ _<server>_ is name or IP address of the server and _<firmware>_ is a file with n
 
 Example of run: `java robot.Robot 81.25.17.115 /data/firmware.bin`
 
-<br>
+
 ##  Testing
 
 For testing, you can use a test image for Virtualbox.
@@ -327,15 +327,15 @@ under which server runs, foto.png is the path to the foto and firmware.bin is th
 
 - Or server could be run with the script *Run_server_for_homework_2*.
 
-<br>
+
 ## For download
 
-| file                                                                          | link                     |
-|---------------------------------------------------------------------------------|---------------------------|
-| Reference solution - server + client (binaries for linux) | *kareludp-en.zip*            |
-| Testing image for Virtualbox                                                  | *BI-PSI-Karel-UDP-en.ova.zip* |
+| file                                                      | link                          |
+|-----------------------------------------------------------|-------------------------------|
+| Reference solution - server + client (binaries for linux) | *kareludp-en.zip*             |
+| Testing image for Virtualbox                              | *BI-PSI-Karel-UDP-en.ova.zip* |
 
-<br>
+
 ## Deadline and submission
 
 Homework code need to be uploaded to the submission server
