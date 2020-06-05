@@ -1,7 +1,7 @@
 #!/bin/env python3
 """
 Concurrent (asynchronous) server for TCP/IP communication
- (with custom protocol) for "controlling remote robots".
+(with custom protocol) for "controlling remote robots".
 
 Author: Dmytro Osaulenko, homework for BI-PSI (Computer Networks) @ FIT CTU
 Date: 29.4.2020
@@ -23,17 +23,17 @@ MOD_16BIT = 65536  # 2**16
 CLIENT_KEY = 45328
 SERVER_KEY = 54621
 
-SERVER_MOVE = b'102 MOVE\a\b'
-SERVER_TURN_LEFT = b'103 TURN LEFT\a\b'
-SERVER_TURN_RIGHT = b'104 TURN RIGHT\a\b'
-SERVER_PICK_UP = b'105 GET MESSAGE\a\b'
-SERVER_LOGOUT = b'106 LOGOUT\a\b'
-SERVER_OK = b'200 OK\a\b'
-SERVER_LOGIN_FAILED = b'300 LOGIN FAILED\a\b'
-SERVER_SYNTAX_ERROR = b'301 SYNTAX ERROR\a\b'
-SERVER_LOGIC_ERROR = b'302 LOGIC ERROR\a\b'
-CLIENT_RECHARGING = b'RECHARGING\a\b'
-CLIENT_FULL_POWER = b'FULL POWER\a\b'
+SERVER_MOVE = b"102 MOVE\a\b"
+SERVER_TURN_LEFT = b"103 TURN LEFT\a\b"
+SERVER_TURN_RIGHT = b"104 TURN RIGHT\a\b"
+SERVER_PICK_UP = b"105 GET MESSAGE\a\b"
+SERVER_LOGOUT = b"106 LOGOUT\a\b"
+SERVER_OK = b"200 OK\a\b"
+SERVER_LOGIN_FAILED = b"300 LOGIN FAILED\a\b"
+SERVER_SYNTAX_ERROR = b"301 SYNTAX ERROR\a\b"
+SERVER_LOGIC_ERROR = b"302 LOGIC ERROR\a\b"
+CLIENT_RECHARGING = b"RECHARGING\a\b"
+CLIENT_FULL_POWER = b"FULL POWER\a\b"
 TIMEOUT = 1
 TIMEOUT_RECHARGING = 5
 
@@ -45,6 +45,7 @@ class Direction(enum.Enum):
     """
     Enum helper (instead of constants using) for direction manipulation.
     """
+
     UP = 0
     RIGHT = 1
     DOWN = 2
@@ -58,6 +59,7 @@ class SocketWrapper:
     like 0.1 sec), multiple messages sent once (does caching, so
     for SocketWrapper's user it looks like independently received messages).
     """
+
     def __init__(self, sock: socket.socket) -> None:
         self.sock = sock
         self.loop = asyncio.get_event_loop()
@@ -68,7 +70,7 @@ class SocketWrapper:
         Closes the socket.
         """
         self.sock.close()
-        logging.debug('Closed client socket.')
+        logging.debug("Closed client socket.")
 
     async def send(self, data: bytes) -> None:
         """
@@ -76,17 +78,13 @@ class SocketWrapper:
         """
         try:
             await self.loop.sock_sendall(self.sock, data)
-            logging.debug('Sent: %s', data)
+            logging.debug("Sent: %s", data)
 
         # if socket was closed earlier (synchronous operation), than data sent
         except BrokenPipeError:
-            logging.debug('Didn\'t send. Socket was closed.')
+            logging.debug("Didn't send. Socket was closed.")
 
-    async def _recv(
-            self,
-            timeout: int,
-            max_len: int
-    ) -> None:
+    async def _recv(self, timeout: int, max_len: int) -> None:
         """
         Does recv() on socket and caching extra data
         (not mandatory needed when it's called, but needed in the future).
@@ -97,31 +95,26 @@ class SocketWrapper:
         # for particular session recv, than to be concatenated to self.cache
         data = bytearray()
 
-        while data.count(b'\a\b') == 0:
+        while data.count(b"\a\b") == 0:
 
             tmp = await asyncio.wait_for(
-                self.loop.sock_recv(self.sock, 100),
-                timeout
+                self.loop.sock_recv(self.sock, 100), timeout
             )
 
             data += tmp
 
-            if tmp == b'' or len(data) >= max_len:
+            if tmp == b"" or len(data) >= max_len:
                 break
 
-            if len(data) > max_len and data.count(b'\a\b') == 0:
-                logging.debug('Maximum message size (%d) reached.', max_len)
+            if len(data) > max_len and data.count(b"\a\b") == 0:
+                logging.debug("Maximum message size (%d) reached.", max_len)
                 await self.send(SERVER_SYNTAX_ERROR)
                 raise RuntimeError  # to close socket
 
         self.cache += data
-        logging.debug('Received: %s', bytes(data))
+        logging.debug("Received: %s", bytes(data))
 
-    async def recv(
-            self,
-            timeout: int = TIMEOUT,
-            max_len: int = 12
-    ) -> bytes:
+    async def recv(self, timeout: int = TIMEOUT, max_len: int = 12) -> bytes:
         """
         Returns data from cache or receives new from robot.
 
@@ -135,7 +128,7 @@ class SocketWrapper:
         """
         # have no cache (it's empty)
         # or it's has no complete data (does not end with \a\b sequence)
-        if self.cache.count(b'\a\b') == 0:
+        if self.cache.count(b"\a\b") == 0:
             await self._recv(timeout, max_len)
 
         # otherwise had some accumulated messages (like 2 in one recv)
@@ -143,7 +136,7 @@ class SocketWrapper:
 
         # find first sequence of \a\b
         # (+2 because it finds where is starts, but we need it with \a\b)
-        message_end_index = self.cache.find(b'\a\b') + 2
+        message_end_index = self.cache.find(b"\a\b") + 2
 
         # save this message for user and return it later
         data = self.cache[:message_end_index]
@@ -161,9 +154,12 @@ class SocketWrapper:
             # little recursion again
             return await self.recv(max_len=max_len)
 
-        if message_end_index > max_len \
-                or message_end_index == 1 or not data.endswith(b'\a\b'):
-            logging.debug('Packet is corrupted')
+        if (
+            message_end_index > max_len
+            or message_end_index == 1
+            or not data.endswith(b"\a\b")
+        ):
+            logging.debug("Packet is corrupted")
             await self.send(SERVER_SYNTAX_ERROR)
             raise RuntimeError  # to close socket
 
@@ -189,15 +185,15 @@ def parse_position(robot_response: bytes) -> Position:
     # will handle it.
     bytes_x, bytes_y = re.match(  # type: ignore
         # \b in Python regex is a word, so using hex
-        rb'OK (-?\d+) (-?\d+)\x07\x08',
-        robot_response
+        rb"OK (-?\d+) (-?\d+)\x07\x08",
+        robot_response,
     ).groups()
 
     return int(bytes_x), int(bytes_y)
 
 
 async def initial_position_and_direction(
-        socket_wrapper: SocketWrapper
+    socket_wrapper: SocketWrapper,
 ) -> Tuple[Position, Direction]:
     """
     Sends TURN_LEFT (to get position) and TURN_RIGHT (to fix initial
@@ -258,25 +254,26 @@ async def login(socket_wrapper: SocketWrapper) -> None:
     Gets shared context (socket_wrapper), tries to authenticate robot.
     """
     data = await socket_wrapper.recv()
-    robot_username_hash = (sum(data.replace(b'\a\b', b'')) * 1000) % MOD_16BIT
+    robot_username_hash = (sum(data.replace(b"\a\b", b"")) * 1000) % MOD_16BIT
 
     await socket_wrapper.send(
-        str((robot_username_hash + SERVER_KEY) % MOD_16BIT).encode() + b'\a\b'
+        str((robot_username_hash + SERVER_KEY) % MOD_16BIT).encode() + b"\a\b"
     )
 
     client_confirmation = await socket_wrapper.recv(max_len=7)
 
     if not client_confirmation[:-2].isdigit():
         logging.debug(
-            'Client_confirmation contains something else than digits.'
+            "Client_confirmation contains something else than digits."
         )
         await socket_wrapper.send(SERVER_SYNTAX_ERROR)
         raise RuntimeError  # to close socket
 
     # compare hash computed by robot
-    if str(
-            (robot_username_hash + CLIENT_KEY) % MOD_16BIT
-    ).encode() + b'\a\b' == client_confirmation:
+    if (
+        str((robot_username_hash + CLIENT_KEY) % MOD_16BIT).encode() + b"\a\b"
+        == client_confirmation
+    ):
 
         await socket_wrapper.send(SERVER_OK)
     else:
@@ -299,27 +296,28 @@ def nearest(choices: Tuple[Position, ...], target: Position) -> Position:
         min(
             enumerate(
                 (
-                    abs(choices[0][0] - target[0]) +
-                    abs(choices[0][1] - target[1]),
-                    abs(choices[1][0] - target[0]) +
-                    abs(choices[1][1] - target[1]),
-                    abs(choices[2][0] - target[0]) +
-                    abs(choices[2][1] - target[1]),
-                    abs(choices[3][0] - target[0]) +
-                    abs(choices[3][1] - target[1])
+                    abs(choices[0][0] - target[0])
+                    + abs(choices[0][1] - target[1]),
+                    abs(choices[1][0] - target[0])
+                    + abs(choices[1][1] - target[1]),
+                    abs(choices[2][0] - target[0])
+                    + abs(choices[2][1] - target[1]),
+                    abs(choices[3][0] - target[0])
+                    + abs(choices[3][1] - target[1]),
                 )
             ),
             # enumerate indexes pairs,
             # so find minimum by tuple's second item (actual data, not index)
-            key=lambda x: x[1]
-        )[0]  # but get its index in order to actually return the data
+            key=lambda x: x[1],
+        )[0]
+        # but get its index in order to actually return the data
     ]
 
 
 def get_move(  # pylint: disable=invalid-name
-        # pylint suppressing for x and y
-        x: int,
-        y: int
+    # pylint suppressing for x and y
+    x: int,
+    y: int,
 ) -> Iterator[Position]:
     """
     Returns to which position should robot move.
@@ -333,16 +331,12 @@ def get_move(  # pylint: disable=invalid-name
     if (abs(x), abs(y)) != (2, 2):
 
         # choose the nearest corner to move to
-        corner = nearest(
-            ((-2, -2), (-2, 2), (2, -2), (2, 2)),
-            (x, y)
-        )
+        corner = nearest(((-2, -2), (-2, 2), (2, -2), (2, 2)), (x, y))
 
         # move from position to desired corner
         while (x, y) != corner:
             x, y = nearest(
-                ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)),
-                corner
+                ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)), corner
             )
             yield x, y
 
@@ -356,9 +350,7 @@ def get_move(  # pylint: disable=invalid-name
 
 
 async def next_move(
-        position: Position,
-        direction: Direction,
-        socket_wrapper: SocketWrapper
+    position: Position, direction: Direction, socket_wrapper: SocketWrapper
 ) -> AsyncIterator[Position]:
     """
     AsyncIterator which gets position, direction and shared socket wrapper,
@@ -444,15 +436,15 @@ async def manage_robot(socket_wrapper: SocketWrapper) -> None:
                 await socket_wrapper.send(SERVER_PICK_UP)
                 message = await socket_wrapper.recv(max_len=100)
 
-                if message not in (b'', b'\a\b'):
-                    logging.info('Found message: %s', message.decode())
+                if message not in (b"", b"\a\b"):
+                    logging.info("Found message: %s", message.decode())
                     await socket_wrapper.send(SERVER_LOGOUT)
                     break
 
     except asyncio.TimeoutError:
-        logging.debug('Timeout has exceeded.')
+        logging.debug("Timeout has exceeded.")
     except RuntimeError:
-        logging.debug('Logic expects closing the client socket.')
+        logging.debug("Logic expects closing the client socket.")
     finally:
         socket_wrapper.close_socket()
 
@@ -474,7 +466,7 @@ async def main(addr: str, port: int) -> None:
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     sock.bind((addr, port))
-    logging.info('Server started on %s:%d', addr, port)
+    logging.info("Server started on %s:%d", addr, port)
 
     sock.listen()
     sock.setblocking(False)
@@ -482,38 +474,48 @@ async def main(addr: str, port: int) -> None:
     with sock:
         while True:
             client_socket, client_addr_info = await loop.sock_accept(sock)
-            logging.debug('Accepted request from: %s', client_addr_info)
+            logging.debug("Accepted request from: %s", client_addr_info)
             loop.create_task(manage_robot(SocketWrapper(client_socket)))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     PARSER = argparse.ArgumentParser(
-        description=''.join(__doc__.split('\n')[:3])
+        description=__doc__,
+        # Dynamically created class based from 3 default formatters.
+        # Unfortunately there is no default class with all these features,
+        # so metaclass thing was used.
+        # ---
+        # first formatter fixes whitespaces when dealing with __doc__,
+        # so it can be shown when -h/--help hit as you can see it in the code.
+        # second formatter fixes showing default values for arguments.
+        # third formatter fixes showing argument values types.
+        formatter_class=type(
+            "",
+            (
+                argparse.RawDescriptionHelpFormatter,
+                argparse.ArgumentDefaultsHelpFormatter,
+                argparse.MetavarTypeHelpFormatter,
+            ),
+            {},
+        ),
+        allow_abbrev=False,  # disallow abbreviations, be explicit!
     )
 
     PARSER.add_argument(
-        '-p',
-        '--port',
-        default=8080,
-        type=int,
-        help='Server port (int). Default: 8080'
+        "-p", "--port", default=8080, type=int, help="Server port.",
     )
 
     PARSER.add_argument(
-        '-a',
-        '--addr',
-        default='127.0.0.1',
-        type=str,
-        help='Server address (string). Default: 127.0.0.1'
+        "-a", "--addr", default="127.0.0.1", type=str, help="Server address.",
     )
 
     PARSER.add_argument(
-        '-v',
-        '--verbose',
+        "-v",
+        "--verbose",
         default=False,
-        action='store_true',
-        help='Show logging output. Default: false.'
+        action="store_true",
+        help="Show logging output.",
     )
 
     ARGS = PARSER.parse_args()
@@ -521,10 +523,10 @@ if __name__ == '__main__':
     if ARGS.verbose:
         logging.basicConfig(
             level=logging.DEBUG,
-            format='[%(asctime)s] %(levelname)6s: %(message)s'
+            format="[%(asctime)s] %(levelname)6s: %(message)s",
         )
 
     try:
         asyncio.run(main(ARGS.addr, ARGS.port))
     except KeyboardInterrupt:
-        logging.info('Server stopped')
+        logging.info("Server stopped")
