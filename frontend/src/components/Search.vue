@@ -19,14 +19,12 @@
             </b-dropdown>
           </b-input-group-prepend>
 
-          <transition name="fade">
-            <b-form-input
-              size="lg"
-              v-model="inputData"
-              @update="cleanResultsOnInputChange"
-              required
-            />
-          </transition>
+          <b-form-input
+            size="lg"
+            v-model="inputData"
+            @update="cleanResultsOnInputChange"
+            required
+          />
 
           <b-input-group-append>
             <b-button @click="sendQuery" variant="warning">Search</b-button>
@@ -75,20 +73,6 @@
 }
 .statistics {
   color: gray;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.5s ease-in-out, transform 0.5 ease;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.fade-enter-to,
-.fade-leave {
-  opacity: 1;
 }
 </style>
 
