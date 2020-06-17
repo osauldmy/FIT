@@ -1,5 +1,6 @@
 """
 Aux module for local usage/debug/development, frontend sends requests here.
+
 logic module uses data prepared and uploaded to AWS S3 and AWS DynamoDB
 """
 import logging
@@ -8,13 +9,6 @@ import aiohttp.web
 import aiohttp_cors
 
 import logic
-
-
-# application logging level is debug, because of log propagation
-# there are also debug messages from 2 these libs, which we don't
-# want to see, so changing their log level
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("aiobotocore").setLevel(logging.WARNING)
 
 
 async def get_dataset_names(_: aiohttp.web.Request) -> aiohttp.web.Response:
@@ -72,7 +66,7 @@ def main() -> None:
     Local server for frontend.
     For local debug/development. For production AWS Lambda is used.
     """
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     app = aiohttp.web.Application()
 
