@@ -8,7 +8,7 @@ task.png pictures not only the task but referential implementation and my implem
 
 My implementation passed all required and nonrequired tests, but didn't pass bonus tests.
 
-My code is located between `#ifndef __PROGTEST__` in *solution.cpp*. The rest of the code **is not mine** and was provided as helping code in order to do the homework.
+My code is located in *solution.cpp* (except `main()`). The rest of the code **is not mine** and was provided as helping code in order to do the homework.
 
 Helping code with Makefile, static lib and tests was provided like sample.tgz archive, so student only should have to unarchive it, program
 the CSentinelHacker class in solution.cpp and then submit solution.cpp to progtest.
