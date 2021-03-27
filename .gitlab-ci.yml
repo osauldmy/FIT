@@ -30,8 +30,8 @@ lint:
   stage: lint
   script:
     - pip install flake8 mypy
-    - flake8
-    - mypy
+    - flake8 src
+    - mypy src
 
 # test:
 #   stage: test
