@@ -4,8 +4,10 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements ./requirements
-
-RUN pip install -r requirements/base.txt
-
 COPY . .
+
+RUN pip install -r requirements.txt
+
+# Add this line in order to provide basic `docker run output`
+# To be removed later!
+CMD ["echo", "Hello World!"]
