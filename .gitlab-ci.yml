@@ -4,6 +4,7 @@ image: python:3.9-slim
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PROJECT_SOURCE_DIR: "apixy"
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/reference/pip_install/#caching
@@ -29,8 +30,8 @@ lint:
   stage: lint
   script:
     - pip install flake8 mypy
-    - flake8 apixy
-    - mypy apixy
+    - flake8 $PROJECT_SOURCE_DIR
+    - mypy $PROJECT_SOURCE_DIR
 
 # test:
 #   stage: test
