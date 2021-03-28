@@ -29,8 +29,8 @@ lint:
   stage: lint
   script:
     - pip install flake8 mypy
-    - flake8 src
-    - mypy src
+    - flake8 apixy
+    - mypy apixy
 
 # test:
 #   stage: test
