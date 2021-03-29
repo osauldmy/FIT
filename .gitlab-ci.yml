@@ -5,7 +5,7 @@ image: python:3.9-slim
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  GIT_STRATEGY: "clone"
+  PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
   PROJECT_SOURCE_DIR: "apixy"
 
 # Pip's cache doesn't store the python packages
@@ -15,6 +15,7 @@ variables:
 # them in a virtualenv and cache it as well.
 cache:
   paths:
+    - $PRE_COMMIT_HOME
     - .cache/pip
     - venv/
 
