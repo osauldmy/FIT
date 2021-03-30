@@ -17,11 +17,11 @@ class ProjectRepository:
     """Interface for the persistence layer operating on Project objects"""
 
     @abstractmethod
-    async def getById(self, project_id: uuid.UUID) -> Project:
+    async def get_by_id(self, project_id: uuid.UUID) -> Project:
         """Get a single Project for a known uuid"""
 
     @abstractmethod
-    async def getAll(self, filters: Optional[Dict[str, Any]] = None) -> List[Project]:
+    async def get_all(self, filters: Optional[Dict[str, Any]] = None) -> List[Project]:
         """Get a filtered list of Projects"""
 
     @abstractmethod

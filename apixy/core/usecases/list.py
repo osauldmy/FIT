@@ -9,5 +9,5 @@ class ListProjectsUsecase(ProjectRepositoryUsecase[list[Project]]):
 
     async def execute(self) -> Response[list[Project]]:
         """Fetches Projects and returns them."""
-        projects = await self.project_repository.getAll()
+        projects = await self.project_repository.get_all()
         return Response.success(content=projects)
