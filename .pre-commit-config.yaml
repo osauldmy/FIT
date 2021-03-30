@@ -60,6 +60,10 @@ repos:
     rev: pylint-2.7.2
     hooks:
       - id: pylint
+        additional_dependencies: [
+          fastapi==0.63.0,
+          pydantic==1.8.1,
+        ]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.0
