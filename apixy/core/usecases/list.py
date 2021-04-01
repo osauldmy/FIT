@@ -1,5 +1,3 @@
-from typing import Dict
-
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
@@ -9,26 +7,31 @@ from .base import ProjectRepositoryUsecase
 
 
 @dataclass(frozen=True)
-class Input:
+class ListProjectsInput:
     """Container for the input parameters this usecase accepts"""
 
-    filters: Dict[str, str]
     count: int
     page: int
 
 
-class OutputProject(BaseModel):
+class ListProjectsOutput(BaseModel):
     """This is what the usecase will output"""
 
     slug: str
 
 
-class ListProjectsUsecase(ProjectRepositoryUsecase[Input, list[OutputProject]]):
+class ListProjectsUsecase(
+    ProjectRepositoryUsecase[ListProjectsInput, list[ListProjectsOutput]]
+):
     """Usecase for a list of products"""
 
-    async def execute(self, data: Input) -> AppResponse[list[OutputProject]]:
+    async def execute(
+        self, data: ListProjectsInput
+    ) -> AppResponse[list[ListProjectsOutput]]:
         """Fetches Projects and returns them."""
-        projects = await self.project_repository.get_all(filters=data.filters)
-        return AppResponse.success(
-            content=[OutputProject(slug=p.slug) for p in projects]
+
+        projects = await self.project_repository.get_all(
+            count=data.count, page=data.page
         )
+        result = [ListProjectsOutput(slug=p.slug) for p in projects]
+        return AppResponse.success(content=result)

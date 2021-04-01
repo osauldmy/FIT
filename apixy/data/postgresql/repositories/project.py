@@ -13,7 +13,9 @@ class PostgresProjectRepository(PostgresRepository, ProjectRepository):
         # get project through sqlalchemy
         pass
 
-    async def get_all(self, filters: Optional[Dict[str, Any]] = None) -> List[Project]:
+    async def get_all(
+        self, count: int = 30, page: int = 1, filters: Optional[Dict[str, Any]] = None
+    ) -> List[Project]:
         return [Project(uuid=uuid.uuid4(), slug="dummy_project")]
 
     async def save(self, project: Project) -> None:

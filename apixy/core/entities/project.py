@@ -21,7 +21,9 @@ class ProjectRepository:
         """Get a single Project for a known uuid"""
 
     @abstractmethod
-    async def get_all(self, filters: Optional[Dict[str, Any]] = None) -> List[Project]:
+    async def get_all(
+        self, count: int = 30, page: int = 1, filters: Optional[Dict[str, Any]] = None
+    ) -> List[Project]:
         """Get a filtered list of Projects"""
 
     @abstractmethod
