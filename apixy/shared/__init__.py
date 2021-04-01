@@ -1,7 +1,7 @@
-from .response import Response
+from .response import AppResponse
 from .usecase import Usecase
 
 __all__ = [
-    "Response",
+    "AppResponse",
     "Usecase",
 ]

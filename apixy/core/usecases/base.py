@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import TypeVar
 
 from apixy.core.entities import ProjectRepository
-from apixy.shared import Response, Usecase
+from apixy.shared import AppResponse, Usecase
 
 E = TypeVar("E")
 
@@ -16,5 +16,5 @@ class ProjectRepositoryUsecase(Usecase[E]):
         self.project_repository = project_repository
 
     @abstractmethod
-    async def execute(self) -> Response[E]:
+    async def execute(self) -> AppResponse[E]:
         pass
