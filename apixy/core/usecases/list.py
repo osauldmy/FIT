@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
-from apixy.shared import AppResponse
+from apixy.shared import UseCaseResponse
 
 from .base import ProjectRepositoryUsecase
 
@@ -27,11 +27,11 @@ class ListProjectsUsecase(
 
     async def execute(
         self, data: ListProjectsInput
-    ) -> AppResponse[list[ListProjectsOutput]]:
+    ) -> UseCaseResponse[list[ListProjectsOutput]]:
         """Fetches Projects and returns them."""
 
         projects = await self.project_repository.get_all(
             count=data.count, page=data.page
         )
         result = [ListProjectsOutput(slug=p.slug) for p in projects]
-        return AppResponse.success(content=result)
+        return UseCaseResponse.success(content=result)
