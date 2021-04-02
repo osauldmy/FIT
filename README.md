@@ -18,20 +18,6 @@ git checkout your_branch # optional step
 pre-commit run --all-files # optional step to create cache
 ```
 
-## Docker
-
-Building a docker image:
-
-```shell
-docker build -t apixy-be .
-```
-
-Running a docker container:
-
-```shell
-docker run --rm apixy
-```
-
 ## Running the web server locally
 
 Copy the .env.sample file and edit the values:
