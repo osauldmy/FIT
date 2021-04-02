@@ -5,6 +5,8 @@ from apixy.shared import UseCaseResponse
 
 from .base import ProjectRepositoryUsecase
 
+# feel free to delete these later, they're just for demonstration
+
 
 @dataclass(frozen=True)
 class ListProjectsInput:

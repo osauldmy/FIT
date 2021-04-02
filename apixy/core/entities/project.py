@@ -27,5 +27,5 @@ class ProjectRepository:
         """Get a filtered list of Projects"""
 
     @abstractmethod
-    async def save(self, project: Project) -> None:
+    async def save(self, project: Project) -> Project:
         """Save an updated Project"""

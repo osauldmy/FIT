@@ -23,5 +23,5 @@ class PostgresProjectRepository(ProjectRepository):
     ) -> List[Project]:
         return [self.map_to_project(p) for p in await ProjectModel.all()]
 
-    async def save(self, project: Project) -> None:
+    async def save(self, project: Project) -> Project:
         pass
