@@ -26,7 +26,7 @@ before_script:
 
 stages:
   - lint
-  # - test
+  - test
   # - deploy
 
 lint:
@@ -35,8 +35,8 @@ lint:
     - pip install pre-commit
     - pre-commit run --all-files
 
-# test:
-#   stage: test
-#   script:
-#     - pip install -r requirements/dev.txt
-#     - pytest
+test:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python -m pytest tests/unit
