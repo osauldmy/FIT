@@ -10,6 +10,8 @@ services:
     restart: unless-stopped
     volumes:
       - .:/app
+    depends_on:
+      - db
     command: ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0 --reload"]
   db:
     image: postgres:13
