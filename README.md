@@ -31,3 +31,37 @@ Running a docker container:
 ```shell
 docker run --rm apixy
 ```
+
+## Running the web server locally
+
+Copy the .env.sample file and edit the values:
+
+```shell
+cp .env.sample .env
+```
+
+Run the db and migrate containers:
+
+```shell
+docker-compose up --build db migrate
+```
+
+Run the api component locally (--reload for autoreload on file change):
+
+```shell
+uvicorn apixy.app:app --reload
+```
+
+## Running the entire app in docker
+
+Copy the .env.sample file and edit the values:
+
+```shell
+cp .env.sample .env
+```
+
+Run the app:
+
+```shell
+docker-compose up --build
+```
