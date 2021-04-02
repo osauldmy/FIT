@@ -1,8 +1,6 @@
 """The app's entrypoint"""
 
-from fastapi import FastAPI
 
-from .api.v1.api import router
+from .api.app import app
 
-app = FastAPI(title="Apixy")
-app.include_router(router)
+__all__ = ["app"]

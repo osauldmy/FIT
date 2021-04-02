@@ -9,7 +9,7 @@ from apixy.core.usecases.list import (
 )
 from apixy.data.postgresql.repositories import PostgresProjectRepository
 
-router = APIRouter()
+router = APIRouter(tags=["projects"])
 
 
 @router.get("/")
