@@ -17,7 +17,6 @@ async def get_projects(count: int, page: int) -> List[ListProjectsOutput]:
     """Endpoint for project list."""
     # instantiating this here, could later be moved into a decorator (for example)
     repo = PostgresProjectRepository()
-    async with repo:
-        usecase = ListProjectsUsecase(project_repository=repo)
-        response = await usecase.execute(ListProjectsInput(count=count, page=page))
+    usecase = ListProjectsUsecase(project_repository=repo)
+    response = await usecase.execute(ListProjectsInput(count=count, page=page))
     return response.content

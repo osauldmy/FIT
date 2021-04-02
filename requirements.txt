@@ -1,3 +1,5 @@
+aerich==0.5.2
 fastapi==0.63.0
 pydantic<2.0.0,>=1.0.0
+tortoise-orm[asyncpg]==0.17.1
 uvicorn==0.13.4

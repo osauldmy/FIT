@@ -1,4 +1,3 @@
-from .postgres import PostgresRepository
-from .project import PostgresProjectRepository
+from .core import PostgresProjectRepository
 
-__all__ = ["PostgresRepository", "PostgresProjectRepository"]
+__all__ = ["PostgresProjectRepository"]

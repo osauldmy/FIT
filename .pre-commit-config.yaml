@@ -63,6 +63,7 @@ repos:
         additional_dependencies: [
           fastapi==0.63.0,
           pydantic==1.8.1,
+          tortoise-orm==0.17.1
         ]
 
   - repo: https://github.com/PyCQA/bandit
@@ -78,4 +79,5 @@ repos:
         additional_dependencies: [
           fastapi==0.63.0,
           pydantic==1.8.1,
+          tortoise-orm==0.17.1
         ]

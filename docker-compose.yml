@@ -21,6 +21,14 @@ services:
     restart: unless-stopped
     volumes:
       - apixy_db:/var/lib/postgresql
+  migrate:
+    build: .
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=db
+    depends_on:
+      - db
+    command: "aerich upgrade"
 
 volumes:
   apixy_db:
