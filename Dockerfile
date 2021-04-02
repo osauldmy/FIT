@@ -4,10 +4,10 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-# Add this line in order to provide basic `docker run output`
-# To be removed later!
-CMD ["echo", "Hello World!"]
+COPY . .
+
+CMD ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0"]
