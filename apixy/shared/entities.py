@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseConfig, BaseModel, Extra
 
 
 class ForbidExtraModel(BaseModel):
@@ -7,7 +7,7 @@ class ForbidExtraModel(BaseModel):
     Forbids extra attributes in schema, allows only defined.
     """
 
-    class Config:
+    class Config(BaseConfig):
         """pydantic options"""
 
-        extra = "forbid"
+        extra = Extra.forbid
