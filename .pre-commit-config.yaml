@@ -66,6 +66,9 @@ repos:
     hooks:
       - id: pylint
         additional_dependencies: [
+          aiohttp==3.7.4,
+          databases==0.4.3,
+          motor==2.4.0,
           fastapi==0.63.0,
           fastapi_utils==0.2.1,
           pydantic==1.8.1,
