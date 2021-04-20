@@ -1,6 +1,7 @@
 ---
 version: "3"
 services:
+
   api:
     build: .
     ports:
@@ -14,6 +15,7 @@ services:
     depends_on:
       - db
     command: ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0 --reload"]
+
   db:
     image: postgres:13
     ports:
@@ -22,11 +24,13 @@ services:
     restart: unless-stopped
     volumes:
       - apixy_db:/var/lib/postgresql
+
   migrate:
     build: .
     env_file: .env
     environment:
       - POSTGRES_HOST=db
+    restart: on-failure:3
     depends_on:
       - db
     command: "aerich upgrade"
