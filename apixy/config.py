@@ -1,4 +1,5 @@
 from os import environ
+from typing import Any, Dict, Final
 
 from pydantic import BaseConfig
 
@@ -19,3 +20,28 @@ class Settings(BaseConfig):
 
 
 settings = Settings()
+
+
+TORTOISE_CONFIG: Final[Dict[str, Any]] = {
+    "connections": {
+        "default": {
+            "engine": "tortoise.backends.asyncpg",
+            "credentials": {
+                "database": settings.POSTGRES_DB,
+                "host": settings.POSTGRES_HOST,
+                "password": settings.POSTGRES_PASSWORD,
+                "port": settings.POSTGRES_PORT,
+                "user": settings.POSTGRES_USER,
+            },
+        }
+    },
+    "apps": {
+        "models": {
+            "models": [
+                "apixy.models",
+                "aerich.models",
+            ],
+            "default_connection": "default",
+        }
+    },
+}

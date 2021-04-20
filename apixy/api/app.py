@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
-from apixy.config import settings
-from apixy.data.postgresql.config import TORTOISE_CONFIG
+from apixy.config import TORTOISE_CONFIG, settings
 
 from .v1.app import app as v1_app
 
