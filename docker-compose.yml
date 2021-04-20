@@ -1,9 +1,10 @@
+---
 version: "3"
 services:
   api:
     build: .
     ports:
-      - 8000:8000
+      - 127.0.0.1:8000:8000
     env_file: .env
     environment:
       - POSTGRES_HOST=db
@@ -16,7 +17,7 @@ services:
   db:
     image: postgres:13
     ports:
-    - 5432:5432
+      - 127.0.0.1:5432:5432
     env_file: .env
     restart: unless-stopped
     volumes:
