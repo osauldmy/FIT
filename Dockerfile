@@ -10,4 +10,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
+RUN useradd user
+USER user
+
 CMD ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0"]
