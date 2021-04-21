@@ -1,6 +1,6 @@
 aerich==0.5.2
 aiohttp==3.7.4
-databases==0.4.3
+databases[postgresql]==0.4.3
 fastapi==0.63.0
 fastapi_utils==0.2.1
 jmespath==0.10.0
