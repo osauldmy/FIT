@@ -7,21 +7,27 @@ import aiohttp
 import databases
 import jmespath
 import motor
-from pydantic import AnyUrl, HttpUrl, validator
+from pydantic import AnyUrl, Field, HttpUrl, validator
 
 from apixy.entities.shared import JSONPathSerializable
 
 
 class DataSource(JSONPathSerializable):
-    """An interface for fetching data from a remote source"""
+    """
+    An interface for fetching data from a remote source
+
+    :param url: URI (http(s), database etc)
+    :param jsonpath: JMESPath (https://jmespath.org/) query string
+    :param timeout: a float timeout value
+    """
 
     url: AnyUrl
     jsonpath: str
     # transformation/aggregation TODO
-    timeout: Optional[float] = None  # TODO
+    timeout: Optional[float] = Field(None, ge=0.0)
 
-    @classmethod
     @validator("jsonpath")
+    @classmethod
     def validate_json_path(cls, value: str) -> jmespath.parser.ParsedResult:
         """Validator for jmespath strings"""
         try:
