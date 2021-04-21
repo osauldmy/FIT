@@ -40,9 +40,8 @@ lint:
 test:
   stage: test
   script:
-    - pip install -r requirements.txt
-    - pip install pytest
-    - python -m pytest $UNIT_TEST_DIR
+    - pip install -r requirements.txt -r requirements-test.txt
+    - python -m pytest -v $UNIT_TEST_DIR
 
 sphinx:
   stage: docs
