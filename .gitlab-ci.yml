@@ -28,6 +28,7 @@ before_script:
 stages:
   - lint
   - test
+  - docs
   # - deploy
 
 lint:
@@ -42,3 +43,9 @@ test:
     - pip install -r requirements.txt
     - pip install pytest
     - python -m pytest $UNIT_TEST_DIR
+
+sphinx:
+  stage: docs
+  script:
+    - pip install -r requirements.txt -r requirements-docs.txt
+    - make html -C docs
