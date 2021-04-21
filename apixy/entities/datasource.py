@@ -7,19 +7,9 @@ import aiohttp
 import databases
 import jmespath
 import motor
-from pydantic import AnyUrl, BaseConfig, HttpUrl, validator
+from pydantic import AnyUrl, HttpUrl, validator
 
-from apixy.shared.entities import ForbidExtraModel
-
-
-# todo: will we need this anywhere else? if so, move it to shared
-class JSONPathSerializable(ForbidExtraModel):
-    """Adds a jmespath json encoder to the model."""
-
-    class Config(BaseConfig):
-        """pydantic config"""
-
-        json_encoders = {jmespath.parser.ParsedResult: lambda x: x.expression}
+from apixy.entities.shared import JSONPathSerializable
 
 
 class DataSource(JSONPathSerializable):
