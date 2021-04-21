@@ -13,7 +13,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0 --reload"]
 
   db:
@@ -24,15 +25,20 @@ services:
     restart: unless-stopped
     volumes:
       - apixy_db:/var/lib/postgresql
+    healthcheck:
+      test: "pg_isready --user $POSTGRES_USER"
+      timeout: 5s
+      retries: 20
 
   migrate:
     build: .
     env_file: .env
     environment:
       - POSTGRES_HOST=db
-    restart: on-failure:3
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
     command: "aerich upgrade"
 
 volumes:
