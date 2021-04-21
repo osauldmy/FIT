@@ -67,6 +67,7 @@ repos:
       - id: pylint
         additional_dependencies: [
           fastapi==0.63.0,
+          fastapi_utils==0.2.1,
           pydantic==1.8.1,
           tortoise-orm==0.17.1
         ]
