@@ -1,4 +1,5 @@
 import uuid as uuid_
+from typing import Any, Dict
 
 import pytest
 from pydantic.error_wrappers import ValidationError
@@ -6,26 +7,35 @@ from pydantic.error_wrappers import ValidationError
 from apixy.entities.project import Project
 
 
-def test_can_create() -> None:
+@pytest.fixture
+def sample_project_data() -> Dict[str, Any]:
+    return dict(uuid=uuid_.uuid4(), slug="cool-slug", name="New project")
+
+
+def test_can_create(sample_project_data: Dict[str, Any]) -> None:
     # making sure i can create an instance - validates the other tests
-    Project(uuid=uuid_.uuid4(), slug="cool-slug")
+    Project(**sample_project_data)
 
 
-def test_spaces_in_slug() -> None:
+def test_spaces_in_slug(sample_project_data: Dict[str, Any]) -> None:
     with pytest.raises(ValidationError):
-        Project(uuid=uuid_.uuid4(), slug="cool slug")
+        sample_project_data.update(slug="cool slug")
+        Project(**sample_project_data)
 
 
-def test_slash_in_slug() -> None:
+def test_slash_in_slug(sample_project_data: Dict[str, Any]) -> None:
     with pytest.raises(ValidationError):
-        Project(uuid=uuid_.uuid4(), slug="cool/slug")
+        sample_project_data.update(slug="cool/slug")
+        Project(**sample_project_data)
 
 
-def test_empty_slug() -> None:
+def test_empty_slug(sample_project_data: Dict[str, Any]) -> None:
     with pytest.raises(ValidationError):
-        Project(uuid=uuid_.uuid4(), slug="")
+        sample_project_data.update(slug="")
+        Project(**sample_project_data)
 
 
-def test_dashed_slug() -> None:
+def test_dashed_slug(sample_project_data: Dict[str, Any]) -> None:
     with pytest.raises(ValidationError):
-        Project(uuid=uuid_.uuid4(), slug="cool-slug-")
+        sample_project_data.update(slug="cool-slug-")
+        Project(**sample_project_data)
