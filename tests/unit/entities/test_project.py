@@ -1,4 +1,3 @@
-import uuid as uuid_
 from typing import Any, Dict
 
 import pytest
@@ -9,7 +8,7 @@ from apixy.entities.project import Project
 
 @pytest.fixture
 def sample_project_data() -> Dict[str, Any]:
-    return dict(uuid=uuid_.uuid4(), slug="cool-slug", name="New project")
+    return dict(id=1, slug="cool-slug", name="New project")
 
 
 def test_can_create(sample_project_data: Dict[str, Any]) -> None:
