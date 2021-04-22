@@ -18,7 +18,7 @@ router = APIRouter(tags=["projects"])
 class ProjectCBV:
     """Provides CRUD for Projects"""
 
-    @router.get("/{project_id}")
+    @router.get("/{project_id}", response_model=Project)
     async def get(self, project_id: UUID4) -> Union[Project, Response]:
         """Endpoint for a single project."""
         try:
@@ -27,7 +27,7 @@ class ProjectCBV:
         except DoesNotExist:
             return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-    @router.get("/")
+    @router.get("/", response_model=List[Project])
     async def get_list(self) -> List[Project]:
         """Endpoint for GET"""
         return [p.to_pydantic() for p in await models.Project.all()]
