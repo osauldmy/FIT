@@ -22,5 +22,5 @@ class Project(ProjectBase):
     id: int
 
 
-class ProjectIn(ProjectBase):
+class ProjectInput(ProjectBase):
     """Project without id, used for creation."""
