@@ -5,4 +5,4 @@ from apixy.config import SETTINGS
 from . import projects
 
 app = FastAPI(title=SETTINGS.APP_NAME)
-app.include_router(projects.router, prefix="/projects")
+app.include_router(projects.router)

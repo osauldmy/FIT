@@ -1,8 +1,6 @@
-import uuid as uuid_
 from typing import Optional
 
 from pydantic import Field
-from pydantic.types import UUID4
 
 from .shared import ForbidExtraModel
 
@@ -14,16 +12,15 @@ class ProjectBase(ForbidExtraModel):
     # the regex matches alphanumeric chars separated with hyphens
     # todo: we might want to do this without a regex
 
+    class Config:
+        orm_mode = True
+
 
 class Project(ProjectBase):
     """The Project entity from our domain model."""
 
-    uuid: UUID4 = Field(default_factory=uuid_.uuid4)
+    id: int
 
 
 class ProjectIn(ProjectBase):
-    """Project without uuid, used for creation."""
-
-    def to_project(self) -> Project:
-        """Creates a Project."""
-        return Project(**self.__dict__)
+    """Project without id, used for creation."""
