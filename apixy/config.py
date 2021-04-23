@@ -17,6 +17,7 @@ class Settings(BaseConfig):
     POSTGRES_PORT: str = environ.get("POSTGRES_PORT", "5432")
     POSTGRES_USER: str = environ.get("POSTGRES_USER", "")
     POSTGRES_PASSWORD: str = environ.get("POSTGRES_PASSWORD", "")
+    REDIS_URI: str = environ.get("REDIS_URI", "redis://localhost")
     DEFAULT_PAGINATION_LIMIT: int = 30
 
     ORIGINS: List[str] = list(

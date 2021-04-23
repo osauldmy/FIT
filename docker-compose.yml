@@ -9,10 +9,13 @@ services:
     env_file: .env
     environment:
       - POSTGRES_HOST=db
+      - REDIS_URI="redis://redis"
     restart: unless-stopped
     volumes:
       - .:/app
     depends_on:
+      redis:
+        condition: service_started
       db:
         condition: service_healthy
     command: [
@@ -34,6 +37,12 @@ services:
       interval: 2s
       timeout: 2s
       retries: 20
+
+  redis:
+    image: redislabs/rejson:latest
+    ports:
+      - 127.0.0.1:6379:6379
+    restart: unless-stopped
 
   migrate:
     build: .
