@@ -8,6 +8,7 @@ from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 
 from apixy import models
+from apixy.config import SETTINGS
 from apixy.entities.project import Project, ProjectBase, ProjectInput
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,9 @@ class Projects:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
     @router.get(PREFIX + "/", response_model=List[Project])
-    async def get_list(self, limit: int, offset: int) -> List[Project]:
+    async def get_list(
+        self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
+    ) -> List[Project]:
         """Endpoint for GET"""
         return [
             p.to_pydantic()
