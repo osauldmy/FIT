@@ -10,9 +10,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN useradd user
-# to allow installing pip packages with the image already built
-RUN mkdir -p /home/user && chown user:user /home/user
+RUN useradd -m user
 USER user
 
 CMD ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0"]
