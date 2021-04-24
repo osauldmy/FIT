@@ -1,9 +1,11 @@
 from typing import Any, Mapping
+from unittest import mock
 
 import pydantic
 import pytest
 
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
+from tests.fixtures import http_mock  # noqa: F401
 
 
 class TestHTTPDataSource:
@@ -79,6 +81,30 @@ class TestHTTPDataSource:
     def test_valid_httpdatasource(raw_datasource: Mapping[str, Any]) -> None:
         HTTPDataSource(**raw_datasource)
 
+    @staticmethod
+    @pytest.mark.asyncio
+    async def test_http_datasource_mock_fetch_success(
+        http_mock: Any,  # noqa: F811
+    ) -> None:
+
+        http_datasource = HTTPDataSource(
+            url="http://httpbin.org/get",
+            method="GET",
+            jsonpath="[*]",
+        )
+
+        payload = ["a", "b"]
+
+        http_mock.add(
+            url=http_datasource.url,
+            method=http_datasource.method,
+            status=200,
+            payload=payload,
+        )
+
+        data = await http_datasource.fetch_data()
+        assert data["result"] == payload
+
 
 class TestMongoDBDataSource:
     @staticmethod
@@ -114,7 +140,45 @@ class TestMongoDBDataSource:
                 "collection": "bar",
                 "query": {},
             },
+            {
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "jsonpath": "*",
+                "database": "foo",
+                "collection": "bar",
+                # empty query is also ok
+            },
+            {
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "jsonpath": "*",
+                "database": "foo",
+                "collection": "bar",
+                "query": {"a": "b"},
+            },
         ),
     )
-    def test_valid_httpdatasource(raw_datasource: Mapping[str, Any]) -> None:
+    def test_valid_mongodb_datasource(raw_datasource: Mapping[str, Any]) -> None:
         MongoDBDataSource(**raw_datasource)
+
+    @staticmethod
+    @pytest.mark.asyncio
+    async def test_mongodb_datasource_mock_fetch_success() -> None:
+        mongodb_datasource = MongoDBDataSource(
+            url="mongodb://some.url",
+            database="foo",
+            collection="bar",
+            jsonpath="[*]",
+            query={},
+        )
+        payload = [{"foo": "bar"}, {"bar": "baz"}]
+
+        with mock.patch(
+            "motor.motor_asyncio.AsyncIOMotorCollection.find"
+        ) as cursor_mock:
+            cursor_mock.return_value.to_list = mock.AsyncMock(return_value=payload)
+            cursor_mock.return_value.close = mock.AsyncMock()
+            data = await mongodb_datasource.fetch_data()
+
+            cursor_mock.return_value.to_list.assert_awaited_once()
+            cursor_mock.return_value.close.assert_awaited_once()
+
+        assert data["result"] == payload
