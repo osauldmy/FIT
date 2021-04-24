@@ -7,7 +7,7 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
   PROJECT_SOURCE_DIR: "apixy"
-  UNIT_TEST_DIR: "tests/unit"
+  TEST_DIR: "tests"
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/reference/pip_install/#caching
@@ -37,11 +37,17 @@ lint:
     - pip install pre-commit
     - pre-commit run --all-files
 
-test:
+test_unit:
   stage: test
   script:
     - pip install -r requirements.txt -r requirements-test.txt
-    - python -m pytest -v $UNIT_TEST_DIR
+    - python -m pytest -v $TEST_DIR/unit
+
+test_api:
+  stage: test
+  script:
+    - pip install -r requirements.txt -r requirements-test.txt
+    - python -m pytest -v $TEST_DIR/api
 
 sphinx:
   stage: docs

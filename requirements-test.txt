@@ -1,1 +1,3 @@
 pytest==6.2.3
+# not sure why this isn't a dependency for fastapi but the testclient needs it
+requests==2.25.1
