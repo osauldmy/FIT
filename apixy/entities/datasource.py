@@ -19,7 +19,7 @@ class DataSource(JSONPathSerializable):
 
     :param url: URI (http(s), database etc)
     :param jsonpath: JMESPath (https://jmespath.org/) query string
-    :param timeout: a float timeout value
+    :param timeout: a float timeout value (in seconds)
 
     :raises asyncio.exceptions.TimeoutError: on timeout
     """
