@@ -4,6 +4,7 @@ from abc import abstractmethod
 from typing import Any, Dict, Literal, Optional, cast
 
 import aiohttp
+import async_timeout
 import databases
 import jmespath
 import motor.motor_asyncio
@@ -19,6 +20,8 @@ class DataSource(JSONPathSerializable):
     :param url: URI (http(s), database etc)
     :param jsonpath: JMESPath (https://jmespath.org/) query string
     :param timeout: a float timeout value
+
+    :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
     url: AnyUrl
@@ -48,16 +51,15 @@ class HTTPDataSource(DataSource):
     headers: Dict[str, Any] = {}
 
     async def fetch_data(self) -> Dict[str, Any]:
-        async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=self.timeout)
-        ) as session:
-            async with session.request(
-                method=self.method,
-                url=self.url,
-                json=self.body,
-                headers=self.headers,
-            ) as response:
-                data = await response.json()
+        async with async_timeout.timeout(self.timeout):
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method=self.method,
+                    url=self.url,
+                    json=self.body,
+                    headers=self.headers,
+                ) as response:
+                    data = await response.json()
 
         return {
             "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(data)
@@ -76,7 +78,8 @@ class MongoDBDataSource(DataSource):
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
         cursor = client[self.database][self.collection].find(self.query)
         try:
-            data = await cursor.to_list(None)
+            async with async_timeout.timeout(self.timeout):
+                data = await cursor.to_list(None)
         finally:
             await cursor.close()
 
@@ -93,8 +96,9 @@ class SQLDataSource(DataSource):
     # TODO: sql validator (allow only select)
 
     async def fetch_data(self) -> Dict[str, Any]:
-        async with databases.Database(self.url) as database:
-            rows = await database.fetch_all(query=self.query)
+        async with async_timeout.timeout(self.timeout):
+            async with databases.Database(self.url) as database:
+                rows = await database.fetch_all(query=self.query)
 
         return {
             "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(

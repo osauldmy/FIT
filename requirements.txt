@@ -1,5 +1,6 @@
 aerich==0.5.2
-aiohttp==3.7.4
+aiohttp[speedups]==3.7.4
+async-timeout==3.0.1
 databases[postgresql]==0.4.3
 fastapi==0.63.0
 fastapi_utils==0.2.1
