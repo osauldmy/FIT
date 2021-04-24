@@ -3,6 +3,7 @@ from typing import Final
 from unittest import mock
 
 from fastapi.testclient import TestClient
+from tortoise.exceptions import DoesNotExist
 
 from apixy import app, models
 
@@ -18,4 +19,12 @@ def test_project_get(mocked_get: mock.MagicMock) -> None:
     )
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}1")
     assert response.status_code == 200
+    mocked_get.assert_called_once_with(id=1)
+
+
+@mock.patch("apixy.models.Project.get", return_value=asyncio.Future())
+def test_project_get_404(mocked_get: mock.MagicMock) -> None:
+    mocked_get.side_effect = DoesNotExist()
+    response = client.get(f"{PROJECT_ROUTER_BASE_URI}1")
+    assert response.status_code == 404
     mocked_get.assert_called_once_with(id=1)
