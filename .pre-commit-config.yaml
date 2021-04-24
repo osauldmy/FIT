@@ -71,6 +71,7 @@ repos:
           databases==0.4.3,
           motor==2.4.0,
           fastapi==0.63.0,
+          fastapi_utils==0.2.1,
           fastapi-crudrouter==0.7.0,
           pydantic==1.8.1,
           tortoise-orm==0.17.1,
