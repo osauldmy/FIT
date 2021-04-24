@@ -48,7 +48,7 @@ class Projects:
             await model.save()
             return model.id
         except (FieldError, IntegrityError) as err:
-            logger.error("Project save error.", extra={"exception": err})
+            logger.exception("Project save error.", extra={"exception": err})
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
     @router.get(PREFIX + "/{project_id}", response_model=Project)
