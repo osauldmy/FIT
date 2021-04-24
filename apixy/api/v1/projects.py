@@ -121,7 +121,7 @@ class ProjectsDB:
 
         :param project: A Project entity, can be with or without an ID
         :raise HTTPException: with status code 422
-        :return id of the record
+        :return: id of the record
         """
         model = models.Project(**project.dict())
         try:
