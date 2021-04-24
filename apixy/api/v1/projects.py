@@ -20,7 +20,7 @@ router = APIRouter(tags=["projects"])
 
 
 @cbv(router)
-class ProjectCBV:
+class Projects:
     """Provides CRUD for Projects"""
 
     @staticmethod
