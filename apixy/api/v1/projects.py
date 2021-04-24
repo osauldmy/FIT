@@ -46,9 +46,9 @@ class Projects:
         try:
             await model.save()
             return model.id
-        except (FieldError, IntegrityError) as e:
-            logger.error("Project save error.", extra={"exception": e})
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from e
+        except (FieldError, IntegrityError) as err:
+            logger.error("Project save error.", extra={"exception": err})
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
     @router.get(PREFIX + "/{project_id}", response_model=Project)
     async def get(self, project_id: int) -> Union[Project, Response]:
@@ -56,8 +56,8 @@ class Projects:
         try:
             queryset = await models.Project.get(id=project_id)
             return queryset.to_pydantic()
-        except DoesNotExist as e:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from e
+        except DoesNotExist as err:
+            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
     @router.get(PREFIX + "/", response_model=List[Project])
     async def get_list(self, limit: int, offset: int) -> List[Project]:
