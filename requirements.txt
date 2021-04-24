@@ -2,6 +2,7 @@ aerich==0.5.2
 aiohttp==3.7.4
 databases[postgresql]==0.4.3
 fastapi==0.63.0
+fastapi_utils==0.2.1
 fastapi-crudrouter==0.7.0
 jmespath==0.10.0
 motor==2.4.0
