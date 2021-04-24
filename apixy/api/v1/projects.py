@@ -51,6 +51,10 @@ class Projects:
             logger.exception("Project save error.", extra={"exception": err})
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
+    @staticmethod
+    async def get_paginated_projects(limit: int, offset: int) -> List[models.Project]:
+        return await models.Project.all().limit(limit).offset(offset)
+
     @router.get(PREFIX + "/{project_id}", response_model=Project)
     async def get(self, project_id: int) -> Union[Project, Response]:
         """Endpoint for a single project."""
@@ -66,8 +70,7 @@ class Projects:
     ) -> List[Project]:
         """Endpoint for GET"""
         return [
-            p.to_pydantic()
-            for p in await models.Project.all().limit(limit).offset(offset)
+            p.to_pydantic() for p in await self.get_paginated_projects(limit, offset)
         ]
 
     @router.post(
