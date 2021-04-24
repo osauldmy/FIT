@@ -6,6 +6,8 @@ from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
+from tortoise.query_utils import Q
+from tortoise.queryset import QuerySet
 
 from apixy import models
 from apixy.config import SETTINGS
@@ -34,6 +36,84 @@ class Projects:
         """
         return router.url_path_for("get", project_id=str(project_id))
 
+    @router.get(PREFIX + "/{project_id}", response_model=Project)
+    async def get(self, project_id: int) -> Union[Project, Response]:
+        """Endpoint for a single project."""
+        try:
+            queryset = await models.Project.get(id=project_id)
+            return queryset.to_pydantic()
+        except DoesNotExist as err:
+            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+
+    @router.get(PREFIX + "/", response_model=List[Project])
+    async def get_list(
+        self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
+    ) -> List[Project]:
+        """Endpoint for GET"""
+        return [
+            p.to_pydantic()
+            for p in await ProjectsDB.get_paginated_projects(limit, offset)
+        ]
+
+    @router.post(
+        PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
+    )
+    async def create(self, project_in: ProjectInput) -> Response:
+        """Creating a new Project"""
+        if await ProjectsDB.slug_exists(project_in.slug):
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Project with this slug already exists."
+            )
+        project_id = await ProjectsDB.save_project(project_in)
+        return Response(
+            status_code=status.HTTP_201_CREATED,
+            headers={"Location": self.get_project_link(project_id)},
+        )
+
+    @router.put(
+        PREFIX + "/{project_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        response_class=Response,
+    )
+    async def update(
+        self, project_id: int, project_in: ProjectInput
+    ) -> Optional[Response]:
+        """Updating an existing Project"""
+        if await ProjectsDB.slug_exists(project_in.slug, project_id):
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Project with this slug already exists."
+            )
+        model = ProjectsDB.project_for_update(project_id)
+        if not await model.exists():
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
+            )
+        await model.update(**project_in.dict())
+        return None
+
+    @router.delete(
+        PREFIX + "/{project_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        response_class=Response,
+    )
+    async def delete(self, project_id: int) -> Optional[Response]:
+        """Deleting a Project"""
+        queryset = ProjectsDB.project_for_update(project_id)
+        if not await queryset.exists():
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        await queryset.delete()
+        return None
+
+
+class ProjectsDB:
+    @staticmethod
+    async def slug_exists(slug: str, exclude_id: Optional[int] = None) -> bool:
+        return await models.Project.filter(Q(slug=slug) & ~Q(id=exclude_id)).exists()
+
+    @staticmethod
+    async def get_paginated_projects(limit: int, offset: int) -> List[models.Project]:
+        return await models.Project.all().limit(limit).offset(offset)
+
     @staticmethod
     async def save_project(project: ProjectBase) -> int:
         """
@@ -52,73 +132,5 @@ class Projects:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
     @staticmethod
-    async def get_paginated_projects(limit: int, offset: int) -> List[models.Project]:
-        return await models.Project.all().limit(limit).offset(offset)
-
-    @router.get(PREFIX + "/{project_id}", response_model=Project)
-    async def get(self, project_id: int) -> Union[Project, Response]:
-        """Endpoint for a single project."""
-        try:
-            queryset = await models.Project.get(id=project_id)
-            return queryset.to_pydantic()
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
-
-    @router.get(PREFIX + "/", response_model=List[Project])
-    async def get_list(
-        self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
-    ) -> List[Project]:
-        """Endpoint for GET"""
-        return [
-            p.to_pydantic() for p in await self.get_paginated_projects(limit, offset)
-        ]
-
-    @router.post(
-        PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
-    )
-    async def create(self, project_in: ProjectInput) -> Response:
-        """Creating a new Project"""
-        if await models.Project.filter(slug=project_in.slug).exists():
-            raise HTTPException(
-                status.HTTP_409_CONFLICT, "Project with this slug already exists."
-            )
-        project_id = await self.save_project(project_in)
-        return Response(
-            status_code=status.HTTP_201_CREATED,
-            headers={"Location": self.get_project_link(project_id)},
-        )
-
-    @router.put(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
-    async def update(
-        self, project_id: int, project_in: ProjectInput
-    ) -> Optional[Response]:
-        """Updating an existing Project"""
-        if await models.Project.filter(slug=project_in.slug).exists():
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND, "Project with this slug already exists."
-            )
-        if not await models.Project.filter(id=project_id).select_for_update().exists():
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
-            )
-        await models.Project.filter(id=project_id).select_for_update().update(
-            **project_in.dict()
-        )
-        return None
-
-    @router.delete(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
-    async def delete(self, project_id: int) -> Optional[Response]:
-        """Deleting a Project"""
-        queryset = models.Project.filter(id=project_id)
-        if not await queryset.exists():
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
-        await queryset.delete()
-        return None
+    def project_for_update(project_id: int) -> QuerySet[models.Project]:
+        return models.Project.filter(id=project_id).select_for_update()
