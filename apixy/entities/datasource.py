@@ -6,7 +6,7 @@ from typing import Any, Dict, Literal, Optional, cast
 import aiohttp
 import databases
 import jmespath
-import motor
+import motor.motor_asyncio
 from pydantic import AnyUrl, Field, HttpUrl, validator
 
 from apixy.entities.shared import JSONPathSerializable
@@ -23,7 +23,6 @@ class DataSource(JSONPathSerializable):
 
     url: AnyUrl
     jsonpath: str
-    # transformation/aggregation TODO
     timeout: Optional[float] = Field(None, ge=0.0)
 
     @validator("jsonpath")
@@ -44,10 +43,9 @@ class HTTPDataSource(DataSource):
     """A datasource that fetches data from an external API."""
 
     url: HttpUrl
-    method: Literal["GET", "POST", "PUT", "DELETE"]  # etc: TODO
+    method: Literal["GET", "POST", "PUT", "DELETE"]
     body: Dict[str, Any] = {}
     headers: Dict[str, Any] = {}
-    # TODO: credentials/token # or leave in headers?
 
     async def fetch_data(self) -> Dict[str, Any]:
         async with aiohttp.ClientSession(
@@ -71,13 +69,16 @@ class MongoDBDataSource(DataSource):
 
     database: str
     collection: str
-    query: Dict[str, Any]
+    query: Dict[str, Any] = {}
 
     async def fetch_data(self) -> Dict[str, Any]:
 
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
         cursor = client[self.database][self.collection].find(self.query)
-        data = await cursor.to_list()
+        try:
+            data = await cursor.to_list(None)
+        finally:
+            await cursor.close()
 
         return {
             "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(data)
