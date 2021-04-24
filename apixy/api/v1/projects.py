@@ -108,10 +108,23 @@ class Projects:
 class ProjectsDB:
     @staticmethod
     async def slug_exists(slug: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Check if a project with passed slug exists, excluding a specific ID.
+
+        :param slug: slug to look for
+        :param exclude_id: ID to exclude, if `None`, nothing will be excluded
+        """
         return await models.Project.filter(Q(slug=slug) & ~Q(id=exclude_id)).exists()
 
     @staticmethod
     async def get_paginated_projects(limit: int, offset: int) -> List[models.Project]:
+        """
+        Fetch all projects and apply limit-offset pagination.
+
+        :param limit: how many to fetch
+        :param offset: how many to skip
+        :return: awaited queryset, so a list
+        """
         return await models.Project.all().limit(limit).offset(offset)
 
     @staticmethod
@@ -133,4 +146,10 @@ class ProjectsDB:
 
     @staticmethod
     def project_for_update(project_id: int) -> QuerySet[models.Project]:
+        """
+        Select a project by id, locking the DB row for the rest of the transaction.
+
+        :param project_id: id to look for
+        :return: a queryset filtered by id
+        """
         return models.Project.filter(id=project_id).select_for_update()
