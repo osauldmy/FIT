@@ -100,7 +100,7 @@ class ProjectCBV:
                 status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
             )
         await models.Project.filter(id=project_id).select_for_update().update(
-            **project_in.dict(exclude_unset=True)
+            **project_in.dict()
         )
         return None
 
