@@ -82,6 +82,7 @@ def test_project_create_slug_exists(
     project_in = ProjectInput(slug="slug", name="name", description="desc")
     response = client.post(f"{PROJECT_ROUTER_BASE_URI}", json=project_in.dict())
     assert response.status_code == 409
+    save_project.assert_not_called()
 
 
 @mock.patch("apixy.api.v1.projects.ProjectsDB.project_for_update")
@@ -111,6 +112,7 @@ def test_project_update_existing_slug(
     project_in = ProjectInput(slug="slug", name="name", description="desc")
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 409
+    project_qs.return_value.update.assert_not_called()
 
 
 @mock.patch("apixy.api.v1.projects.ProjectsDB.project_for_update")
@@ -124,3 +126,26 @@ def test_project_update_id_not_exists(
     project_in = ProjectInput(slug="slug", name="name", description="desc")
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 404
+    project_qs.return_value.update.assert_not_called()
+
+
+@mock.patch("apixy.api.v1.projects.ProjectsDB.project_for_update")
+def test_project_delete(project_qs: mock.MagicMock) -> None:
+    project_qs.return_value.exists = mock.AsyncMock(return_value=True)
+    project_qs.return_value.delete = mock.AsyncMock()
+    response = client.delete(f"{PROJECT_ROUTER_BASE_URI}1")
+    assert response.status_code == 204
+    project_qs.assert_called_once_with(1)
+    project_qs.return_value.exists.assert_called_once_with()
+    project_qs.return_value.delete.assert_called_once_with()
+
+
+@mock.patch("apixy.api.v1.projects.ProjectsDB.project_for_update")
+def test_project_delete_404(project_qs: mock.MagicMock) -> None:
+    project_qs.return_value.exists = mock.AsyncMock(return_value=False)
+    project_qs.return_value.delete = mock.AsyncMock()
+    response = client.delete(f"{PROJECT_ROUTER_BASE_URI}1")
+    assert response.status_code == 404
+    project_qs.assert_called_once_with(1)
+    project_qs.return_value.exists.assert_called_once_with()
+    project_qs.return_value.delete.assert_not_called()
