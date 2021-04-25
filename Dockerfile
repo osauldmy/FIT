@@ -2,6 +2,8 @@ FROM python:3.9-slim
 
 ENV PYTHONUNBUFFERED=1
 
+RUN apt update -y && apt install -y gcc
+
 WORKDIR /app
 
 COPY requirements.txt .
