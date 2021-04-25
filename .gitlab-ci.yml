@@ -58,5 +58,8 @@ sphinx:
 
 docker_build:
   stage: deploy
+  image: docker:20
+  services:
+    - docker:20-dind
   script:
-    - docker build
+    - docker build .
