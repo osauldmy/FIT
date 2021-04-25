@@ -11,7 +11,7 @@ from tortoise.queryset import QuerySet
 
 from apixy import models
 from apixy.config import SETTINGS
-from apixy.entities.project import Project, ProjectBase, ProjectInput
+from apixy.entities.project import Project, ProjectInput
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class Projects:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
             )
-        await model.update(**project_in.dict())
+        await model.update(**project_in.dict(exclude={"id"}))
         return None
 
     @router.delete(
@@ -128,7 +128,7 @@ class ProjectsDB:
         return await models.Project.all().limit(limit).offset(offset)
 
     @staticmethod
-    async def save_project(project: ProjectBase) -> int:
+    async def save_project(project: Project) -> int:
         """
         Try to save a Project to the DB.
 
@@ -136,7 +136,7 @@ class ProjectsDB:
         :raise HTTPException: with status code 422
         :return: id of the record
         """
-        model = models.Project(**project.dict())
+        model = models.Project(**project.dict(exclude_unset=True))
         try:
             await model.save()
             return model.id

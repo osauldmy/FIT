@@ -8,24 +8,22 @@ from tortoise import fields
 from tortoise.models import Model
 
 from apixy.entities.project import Project as ProjectEntity
-from apixy.entities.project import ProjectBase as ProjectEntityBase
 
-EntityBase = TypeVar("EntityBase", bound=BaseModel)
 Entity = TypeVar("Entity", bound=BaseModel)
 
 
-class ORMModel(Generic[EntityBase, Entity]):
+class ORMModel(Generic[Entity]):
     @abstractmethod
     def to_pydantic(self) -> Entity:
         """Creates a pydantic model from a tortoise model fetched from db."""
 
     @classmethod
     @abstractmethod
-    def from_pydantic(cls, entity: EntityBase) -> ORMModel[EntityBase, Entity]:
+    def from_pydantic(cls, entity: Entity) -> ORMModel[Entity]:
         """Creates a tortoise model instance from a pydantic model."""
 
 
-class Project(ORMModel[ProjectEntityBase, ProjectEntity], Model):
+class Project(ORMModel[ProjectEntity], Model):
     """The DB entity for Project"""
 
     id = fields.IntField(pk=True)
@@ -38,5 +36,5 @@ class Project(ORMModel[ProjectEntityBase, ProjectEntity], Model):
         return ProjectEntity.from_orm(self)
 
     @classmethod
-    def from_pydantic(cls, entity: ProjectEntityBase) -> Project:
+    def from_pydantic(cls, entity: ProjectEntity) -> Project:
         return cls(**entity.dict())

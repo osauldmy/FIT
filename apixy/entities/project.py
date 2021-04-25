@@ -2,10 +2,11 @@ from typing import Optional
 
 from pydantic import Field
 
-from .shared import ForbidExtraModel
+from .shared import ForbidExtraModel, OmitFieldsConfig
 
 
-class ProjectBase(ForbidExtraModel):
+class Project(ForbidExtraModel):
+    id: Optional[int]
     name: str = Field(max_length=64)
     slug: str = Field(max_length=64, regex="^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")
     # the regex matches alphanumeric chars separated with hyphens
@@ -16,11 +17,6 @@ class ProjectBase(ForbidExtraModel):
         orm_mode = True
 
 
-class Project(ProjectBase):
-    """The Project entity from our domain model."""
-
-    id: int
-
-
-class ProjectInput(ProjectBase):
-    """Project without id, used for creation."""
+class ProjectInput(Project):
+    class Config(OmitFieldsConfig, Project.Config):
+        omit_fields = ("id",)
