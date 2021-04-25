@@ -93,12 +93,13 @@ def test_project_update(
     slug_exists.return_value = False
     project_qs.return_value.exists = mock.AsyncMock(return_value=True)
     project_qs.return_value.update = mock.AsyncMock()
-    project_in = ProjectInput(slug="slug", name="name", description="desc")
+    kwargs = dict(slug="slug", name="name", description="desc")
+    project_in = ProjectInput(**kwargs)
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 204
     slug_exists.assert_called_once_with("slug", 1)
     project_qs.return_value.exists.assert_called_once_with()
-    project_qs.return_value.update.assert_called_once_with(**project_in.dict())
+    project_qs.return_value.update.assert_called_once_with(**kwargs)
 
 
 @mock.patch("apixy.api.v1.projects.ProjectsDB.project_for_update")
