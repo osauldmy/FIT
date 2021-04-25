@@ -29,8 +29,10 @@ lint:
   cache:
     <<: *global_cache
     paths:
-      # only using pre commit in this stage
-      - $PRE-COMMIT-HOME
+      - $PRE_COMMIT_HOME
+      - .cache/pip
+      - venv/
+
 
   script:
     - pip install pre-commit
