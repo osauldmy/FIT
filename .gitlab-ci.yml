@@ -29,6 +29,7 @@ lint:
   cache:
     <<: *global_cache
     paths:
+      # only using pre commit in this stage
       - $PRE-COMMIT-HOME
 
   script:
