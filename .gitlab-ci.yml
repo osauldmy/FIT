@@ -22,7 +22,7 @@ stages:
   - lint
   - test
   - docs
-  # - deploy
+  - deploy
 
 lint:
   stage: lint
@@ -55,3 +55,8 @@ sphinx:
   script:
     - pip install -r requirements.txt -r requirements-docs.txt
     - make html -C docs
+
+docker_build:
+  stage: deploy
+  script:
+    - docker build
