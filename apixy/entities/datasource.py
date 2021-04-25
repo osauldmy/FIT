@@ -42,6 +42,10 @@ class DataSource(ForbidExtraModel):
     async def fetch_data(self) -> Dict[str, Any]:
         """Fetches data as defined by the instance's attributes"""
 
+    # Added because how models.py is implemented. (Probably not needed)
+    class Config:
+        orm_mode = True
+
 
 class HTTPDataSource(DataSource):
     """A datasource that fetches data from an external API."""
