@@ -32,8 +32,6 @@ lint:
       - $PRE_COMMIT_HOME
       - .cache/pip
       - venv/
-
-
   script:
     - pip install pre-commit
     - pre-commit run --all-files
@@ -61,5 +59,6 @@ docker_build:
   image: docker:20
   services:
     - docker:20-dind
+  before_script: []
   script:
     - docker build .
