@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, List, Mapping
 from unittest import mock
 
 import pydantic
@@ -6,6 +6,9 @@ import pytest
 
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
 from tests.fixtures import http_mock  # noqa: F401
+from tests.unit.entities.datasource_json_responses.spacex_rockets import (
+    PAYLOAD_SPACEX_ROCKETS,
+)
 
 
 class TestHTTPDataSource:
@@ -83,17 +86,61 @@ class TestHTTPDataSource:
 
     @staticmethod
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "raw_datasource, payload, fetched_payload",
+        (
+            (
+                {
+                    "url": "http://httpbin.org/get",
+                    "method": "GET",
+                    "jsonpath": "[*]",
+                },
+                ["a", "b"],
+                ["a", "b"],
+            ),
+            (
+                {
+                    "url": "https://api.spacexdata.com/v4/rockets",
+                    "method": "GET",
+                    "jsonpath": "[*]",
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                PAYLOAD_SPACEX_ROCKETS,
+            ),
+            (
+                {
+                    "url": "https://api.spacexdata.com/v4/rockets",
+                    "method": "GET",
+                    "jsonpath": "[*].name",
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                ["Falcon 1", "Falcon 9", "Falcon Heavy", "Starship"],
+            ),
+            (
+                {
+                    "url": "https://api.spacexdata.com/v4/rockets",
+                    "method": "GET",
+                    "jsonpath": "[*].[name,success_rate_pct]",
+                    "headers": {"Token": "Foo"},
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                [
+                    ["Falcon 1", 40],
+                    ["Falcon 9", 98],
+                    ["Falcon Heavy", 100],
+                    ["Starship", 0],
+                ],
+            ),
+        ),
+    )
     async def test_http_datasource_mock_fetch_success(
+        raw_datasource: Mapping[str, Any],
+        payload: List[Any],
+        fetched_payload: List[Any],
         http_mock: Any,  # noqa: F811
     ) -> None:
 
-        http_datasource = HTTPDataSource(
-            url="http://httpbin.org/get",
-            method="GET",
-            jsonpath="[*]",
-        )
-
-        payload = ["a", "b"]
+        http_datasource = HTTPDataSource(**raw_datasource)
 
         http_mock.add(
             url=http_datasource.url,
@@ -103,7 +150,7 @@ class TestHTTPDataSource:
         )
 
         data = await http_datasource.fetch_data()
-        assert data["result"] == payload
+        assert data["result"] == fetched_payload
 
 
 class TestMongoDBDataSource:
