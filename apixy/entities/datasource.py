@@ -11,6 +11,7 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
+from apixy import cache
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
 from .validators import validate_nonzero_length
@@ -29,19 +30,23 @@ class DataSource(ForbidExtraModel):
     """
     An interface for fetching data from a remote source
 
+    :param name: datasource name for displaying/caching purposes
     :param url: URI (http(s), database etc)
     :param jsonpath: JMESPath (https://jmespath.org/) query string
     :param timeout: a float timeout value (in seconds)
+    :param cache_expire: an int value for cache expiration (in seconds)
     """
 
     class Config:
         orm_mode = True
 
     id: Optional[int]
+    type: str
+    name: str
     url: AnyUrl
     jsonpath: str
     timeout: Optional[float] = Field(60, gt=0.0)
-    type: str
+    cache_expire: Optional[int] = Field(None, gt=0)
 
     @validator("jsonpath")
     @classmethod
