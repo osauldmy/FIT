@@ -78,6 +78,13 @@ class TestHTTPDataSource:
                 "jsonpath": "*",
                 "type": "https",  # wrong type (regex should be the exact match)
             },
+            {
+                # missing name
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "headers": {"Token": "Foo"},
+            },
         ),
     )
     def test_invalid_httpdatasource(raw_datasource: Mapping[str, Any]) -> None:
@@ -89,17 +96,20 @@ class TestHTTPDataSource:
         "raw_datasource",
         (
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "headers": None,
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
@@ -107,6 +117,7 @@ class TestHTTPDataSource:
                 "headers": None,
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
@@ -124,6 +135,7 @@ class TestHTTPDataSource:
         (
             (
                 {
+                    "name": "http1",
                     "url": "http://httpbin.org/get",
                     "method": "GET",
                     "jsonpath": "[*]",
@@ -133,6 +145,7 @@ class TestHTTPDataSource:
             ),
             (
                 {
+                    "name": "http1",
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*]",
@@ -142,6 +155,7 @@ class TestHTTPDataSource:
             ),
             (
                 {
+                    "name": "http1",
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*].name",
@@ -151,6 +165,7 @@ class TestHTTPDataSource:
             ),
             (
                 {
+                    "name": "http1",
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*].[name,success_rate_pct]",
@@ -208,6 +223,14 @@ class TestMongoDBDataSource:
                 "jsonpath": "*",
                 "type": "mongodb",  # wrong type (regex should be the exact match)
             },
+            {
+                # missing name
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "jsonpath": "*",
+                "database": "foo",
+                "collection": "bar",
+                "query": {},
+            },
         ),
     )
     def test_invalid_mongodb_datasource(raw_datasource: Mapping[str, Any]) -> None:
@@ -219,6 +242,7 @@ class TestMongoDBDataSource:
         "raw_datasource",
         (
             {
+                "name": "mongo",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
                 "database": "foo",
@@ -226,6 +250,7 @@ class TestMongoDBDataSource:
                 "query": {},
             },
             {
+                "name": "mongo",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
                 "database": "foo",
@@ -233,6 +258,7 @@ class TestMongoDBDataSource:
                 # empty query is also ok
             },
             {
+                "name": "mongo",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
                 "database": "foo",
