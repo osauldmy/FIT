@@ -47,8 +47,8 @@ class HTTPDataSource(DataSource):
 
     url: HttpUrl
     method: Literal["GET", "POST", "PUT", "DELETE"]
-    body: Dict[str, Any] = {}
-    headers: Dict[str, Any] = {}
+    body: Optional[Dict[str, Any]]
+    headers: Optional[Dict[str, Any]]
 
     async def fetch_data(self) -> Dict[str, Any]:
         async with async_timeout.timeout(self.timeout):
