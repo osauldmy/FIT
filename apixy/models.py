@@ -35,6 +35,7 @@ class Project(ORMModel[ProjectEntity], Model):
     # slug is globally unique for now - this might need to be changed in the future
     slug = fields.CharField(128, unique=True)
     name = fields.CharField(64)
+    merge_strategy = fields.CharField(32)
     description = fields.CharField(512, null=True)
     sources: fields.ManyToManyRelation["DataSource"] = fields.ManyToManyField(
         "models.DataSource", related_name="projects", through="projects_sources"
