@@ -1,6 +1,10 @@
-from typing import Any, Dict, Iterable, Type
+from typing import Any, Dict, Iterable, List, Type, Union
 
 from pydantic import BaseConfig, BaseModel, Extra
+
+# https://github.com/python/typing/issues/182
+# https://stackoverflow.com/a/58405201/6867502
+JSON = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 
 
 class ForbidExtraModel(BaseModel):
