@@ -3,7 +3,17 @@ from typing import Any, Dict, List
 import pydantic
 import pytest
 
-from apixy.entities.merge_strategy import ConcatenationMergeStrategy
+from apixy.entities.merge_strategy import ConcatenationMergeStrategy, MergeStrategyEnum
+
+
+@pytest.mark.parametrize("string", ("concatenation", "CONCATENATION", "conCATeNATION"))
+def test_merge_strategy_enum_create_success(string: str) -> None:
+    assert MergeStrategyEnum.from_str(string) == ConcatenationMergeStrategy()
+
+
+def test_merge_strategy_enum_create_failure_keyerror() -> None:
+    with pytest.raises(KeyError):
+        MergeStrategyEnum.from_str("FOO")
 
 
 # All these type ignores below suppress mypy warnings,
