@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from functools import wraps
 from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type, Union
 
 import aiohttp
@@ -24,6 +25,33 @@ class DataSourceFetchError(Exception):
     Unified exception for datasource fetch method to raise in case of fetching failure.
     To be caught by Project.fetch_data()
     """
+
+
+def redis_cache(coroutine_method: Any) -> Any:
+    """
+    A decorator to enforce DRY on caching for datasources.
+    """
+
+    @wraps(coroutine_method)
+    async def wrapper(self: Any) -> Dict[str, Any]:
+        """
+        Caching routines.
+        """
+        if (
+            self.cache_expire is not None
+            and self.cache_expire > 0  # paranoid thing, even if pydantic checks this
+            and (cached := await cache.json_get(self.name))
+        ):
+            return {"result": cached}
+
+        data: Dict[str, Any] = await coroutine_method(self)
+
+        if self.cache_expire:
+            await cache.json_set(self.name, data["result"], expire=self.cache_expire)
+
+        return data
+
+    return wrapper
 
 
 class DataSource(ForbidExtraModel):
@@ -82,6 +110,7 @@ class HTTPDataSource(DataSource):
         validate_nonzero_length
     )
 
+    @redis_cache
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
             try:
@@ -108,6 +137,7 @@ class MongoDBDataSource(DataSource):
     query: Dict[str, Any] = {}
     type: Annotated[str, Field(regex=r"^mongo$")] = "mongo"
 
+    @redis_cache
     async def fetch_data(self) -> Any:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
         async with async_timeout.timeout(self.timeout):
@@ -130,6 +160,7 @@ class SQLDataSource(DataSource):
 
     # TODO: sql validator (allow only select)
 
+    @redis_cache
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
             try:
