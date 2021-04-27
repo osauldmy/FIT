@@ -1,11 +1,11 @@
 from typing import Any, List, Mapping
 from unittest import mock
 
+import aioresponses
 import pydantic
 import pytest
 
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
-from tests.fixtures import http_mock  # noqa: F401
 from tests.unit.entities.datasource_json_responses.spacex_rockets import (
     PAYLOAD_SPACEX_ROCKETS,
 )
@@ -137,19 +137,18 @@ class TestHTTPDataSource:
         raw_datasource: Mapping[str, Any],
         payload: List[Any],
         fetched_payload: List[Any],
-        http_mock: Any,  # noqa: F811
     ) -> None:
 
         http_datasource = HTTPDataSource(**raw_datasource)
+        with aioresponses.aioresponses() as mock:
+            mock.add(
+                url=http_datasource.url,
+                method=http_datasource.method,
+                status=200,
+                payload=payload,
+            )
 
-        http_mock.add(
-            url=http_datasource.url,
-            method=http_datasource.method,
-            status=200,
-            payload=payload,
-        )
-
-        data = await http_datasource.fetch_data()
+            data = await http_datasource.fetch_data()
         assert data["result"] == fetched_payload
 
 
