@@ -8,7 +8,9 @@ from apixy.entities.project import Project
 
 @pytest.fixture
 def sample_project_data() -> Dict[str, Any]:
-    return dict(id=1, slug="cool-slug", name="New project")
+    return dict(
+        id=1, slug="cool-slug", name="New project", merge_strategy="concatenation"
+    )
 
 
 def test_can_create(sample_project_data: Dict[str, Any]) -> None:

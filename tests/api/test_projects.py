@@ -15,7 +15,9 @@ PROJECT_ROUTER_BASE_URI: Final[str] = "/api/v1/projects/"
 
 @mock.patch("apixy.models.Project.get")
 def test_project_get(mocked_get: mock.AsyncMock) -> None:
-    result_kwargs = dict(id=1, slug="slug", name="name", description=None)
+    result_kwargs = dict(
+        id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
+    )
     mocked_get.return_value = models.Project(**result_kwargs)
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}1")
     assert response.json() == result_kwargs
@@ -33,7 +35,9 @@ def test_project_get_404(mocked_get: mock.AsyncMock) -> None:
 
 @mock.patch("apixy.api.v1.projects.ProjectsDB.get_paginated_projects")
 def test_project_get_list(mocked: mock.AsyncMock) -> None:
-    result_kwargs = dict(id=1, slug="slug", name="name", description=None)
+    result_kwargs = dict(
+        id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
+    )
     mocked.return_value = [models.Project(**result_kwargs)]
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}")
     assert response.json() == [result_kwargs]
@@ -43,7 +47,9 @@ def test_project_get_list(mocked: mock.AsyncMock) -> None:
 
 @mock.patch("apixy.api.v1.projects.ProjectsDB.get_paginated_projects")
 def test_project_get_list_pagination(mocked: mock.AsyncMock) -> None:
-    result_kwargs = dict(id=1, slug="slug", name="name", description=None)
+    result_kwargs = dict(
+        id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
+    )
     mocked.return_value = [models.Project(**result_kwargs)]
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}?offset=10&limit=20")
     assert response.json() == [result_kwargs]
@@ -66,7 +72,9 @@ def test_project_create(
 ) -> None:
     slug_exists.return_value = False
     save_project.return_value = 1
-    project_in = ProjectInput(slug="slug", name="name", description="desc")
+    project_in = ProjectInput(
+        slug="slug", name="name", description="desc", merge_strategy="concatenation"
+    )
     response = client.post(f"{PROJECT_ROUTER_BASE_URI}", json=project_in.dict())
     assert response.status_code == 201
     assert response.headers["Location"] == "/projects/1"
@@ -79,7 +87,9 @@ def test_project_create_slug_exists(
 ) -> None:
     slug_exists.return_value = True
     save_project.return_value = 1
-    project_in = ProjectInput(slug="slug", name="name", description="desc")
+    project_in = ProjectInput(
+        slug="slug", name="name", description="desc", merge_strategy="concatenation"
+    )
     response = client.post(f"{PROJECT_ROUTER_BASE_URI}", json=project_in.dict())
     assert response.status_code == 409
     save_project.assert_not_called()
@@ -93,7 +103,9 @@ def test_project_update(
     slug_exists.return_value = False
     project_qs.return_value.exists = mock.AsyncMock(return_value=True)
     project_qs.return_value.update = mock.AsyncMock()
-    kwargs = dict(slug="slug", name="name", description="desc")
+    kwargs = dict(
+        slug="slug", name="name", description="desc", merge_strategy="concatenation"
+    )
     project_in = ProjectInput(**kwargs)
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 204
@@ -110,7 +122,9 @@ def test_project_update_existing_slug(
     slug_exists.return_value = True
     project_qs.return_value.exists = mock.AsyncMock(return_value=True)
     project_qs.return_value.update = mock.AsyncMock()
-    project_in = ProjectInput(slug="slug", name="name", description="desc")
+    project_in = ProjectInput(
+        slug="slug", name="name", description="desc", merge_strategy="concatenation"
+    )
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 409
     project_qs.return_value.update.assert_not_called()
@@ -124,7 +138,9 @@ def test_project_update_id_not_exists(
     slug_exists.return_value = False
     project_qs.return_value.exists = mock.AsyncMock(return_value=False)
     project_qs.return_value.update = mock.AsyncMock()
-    project_in = ProjectInput(slug="slug", name="name", description="desc")
+    project_in = ProjectInput(
+        slug="slug", name="name", description="desc", merge_strategy="concatenation"
+    )
     response = client.put(f"{PROJECT_ROUTER_BASE_URI}1", json=project_in.dict())
     assert response.status_code == 404
     project_qs.return_value.update.assert_not_called()
