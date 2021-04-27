@@ -1,6 +1,5 @@
 from typing import Any, Dict, Iterable, Type
 
-from jmespath.parser import ParsedResult
 from pydantic import BaseConfig, BaseModel, Extra
 
 
@@ -14,15 +13,6 @@ class ForbidExtraModel(BaseModel):
         """pydantic options"""
 
         extra = Extra.forbid
-
-
-class JSONPathSerializable(ForbidExtraModel):
-    """Adds a jmespath json encoder to the model."""
-
-    class Config(BaseConfig):
-        """pydantic config"""
-
-        json_encoders = {ParsedResult: lambda x: x.expression}
 
 
 class SchemaExtraConfig:

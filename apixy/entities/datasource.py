@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Literal, Optional, cast
+from typing import Any, Dict, Literal, Optional
 
 import aiohttp
 import async_timeout
@@ -10,10 +10,10 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, Field, HttpUrl, validator
 
-from apixy.entities.shared import JSONPathSerializable
+from apixy.entities.shared import ForbidExtraModel
 
 
-class DataSource(JSONPathSerializable):
+class DataSource(ForbidExtraModel):
     """
     An interface for fetching data from a remote source
 
@@ -33,7 +33,8 @@ class DataSource(JSONPathSerializable):
     def validate_json_path(cls, value: str) -> jmespath.parser.ParsedResult:
         """Validator for jmespath strings"""
         try:
-            return jmespath.compile(value)
+            jmespath.compile(value)
+            return value
         except jmespath.exceptions.ParseError as exception:
             raise ValueError("Invalid JsonPath") from exception
 
@@ -61,9 +62,7 @@ class HTTPDataSource(DataSource):
                 ) as response:
                     data = await response.json()
 
-        return {
-            "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(data)
-        }
+        return {"result": jmespath.compile(self.jsonpath).search(data)}
 
 
 class MongoDBDataSource(DataSource):
@@ -83,9 +82,7 @@ class MongoDBDataSource(DataSource):
         finally:
             await cursor.close()
 
-        return {
-            "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(data)
-        }
+        return {"result": jmespath.compile(self.jsonpath).search(data)}
 
 
 class SQLDataSource(DataSource):
@@ -101,7 +98,7 @@ class SQLDataSource(DataSource):
                 rows = await database.fetch_all(query=self.query)
 
         return {
-            "result": cast(jmespath.parser.ParsedResult, self.jsonpath).search(
+            "result": jmespath.compile(self.jsonpath).search(
                 [dict(row) for row in rows]
             )
         }
