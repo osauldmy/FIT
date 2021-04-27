@@ -15,7 +15,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["sh", "-c", "uvicorn apixy.app:app --host 0.0.0.0 --reload"]
+    command: [
+      "sh",
+      "-c",
+      "uvicorn apixy.app:app --host 0.0.0.0 --reload --reload-dir=apixy"
+    ]
 
   db:
     image: postgres:13
