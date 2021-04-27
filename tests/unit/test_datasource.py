@@ -6,9 +6,7 @@ import pydantic
 import pytest
 
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
-from tests.unit.entities.datasource_json_responses.spacex_rockets import (
-    PAYLOAD_SPACEX_ROCKETS,
-)
+from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
 
 class TestHTTPDataSource:
