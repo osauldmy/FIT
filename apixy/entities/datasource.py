@@ -26,7 +26,7 @@ class DataSource(ForbidExtraModel):
 
     url: AnyUrl
     jsonpath: str
-    timeout: Optional[float] = Field(None, ge=0.0)
+    timeout: Optional[float] = Field(None, gt=0.0)
 
     @validator("jsonpath")
     @classmethod
