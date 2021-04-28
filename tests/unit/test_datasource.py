@@ -5,6 +5,7 @@ import aioresponses
 import pydantic
 import pytest
 
+from apixy import models
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
@@ -235,3 +236,66 @@ class TestMongoDBDataSource:
             cursor_mock.return_value.close.assert_awaited_once()
 
         assert data["result"] == payload
+
+
+class TestDataSourceDBModel:
+    @staticmethod
+    def test_http_datasource_from_pydantic() -> None:
+        entity = HTTPDataSource(
+            url="https://apixy.com",
+            method="POST",
+            body={"some": "body", "once": "told me"},
+            headers={"Authorization": "123456"},
+            jsonpath="*",
+            timeout=10,
+        )
+        model = models.DataSource.from_pydantic(entity)
+        assert model.url == entity.url
+        assert model.timeout == entity.timeout
+        assert model.jsonpath == entity.jsonpath
+        assert model.type == "http"
+        assert model.data == {
+            "method": entity.method,
+            "body": entity.body,
+            "headers": entity.headers,
+        }
+
+    @staticmethod
+    def test_mongo_datasource_from_pydantic() -> None:
+        entity = MongoDBDataSource(
+            url="mongodb://some.url",
+            database="foo",
+            collection="bar",
+            jsonpath="[*]",
+            query={},
+        )
+        model = models.DataSource.from_pydantic(entity)
+        assert model.url == entity.url
+        assert model.timeout == entity.timeout
+        assert model.jsonpath == entity.jsonpath
+        assert model.type == "mongo"
+        assert model.data == {
+            "database": entity.database,
+            "query": entity.query,
+            "collection": entity.collection,
+        }
+
+    @staticmethod
+    def test_sql_datasource_from_pydantic() -> None:
+        entity = MongoDBDataSource(
+            url="mongodb://some.url",
+            database="foo",
+            collection="bar",
+            jsonpath="[*]",
+            query={},
+        )
+        model = models.DataSource.from_pydantic(entity)
+        assert model.url == entity.url
+        assert model.timeout == entity.timeout
+        assert model.jsonpath == entity.jsonpath
+        assert model.type == "mongo"
+        assert model.data == {
+            "database": entity.database,
+            "query": entity.query,
+            "collection": entity.collection,
+        }
