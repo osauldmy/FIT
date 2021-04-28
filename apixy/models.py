@@ -79,7 +79,16 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         )
 
     def apply_update(self, entity: DataSourceEntity) -> None:
-        entity_dict = entity.dict(exclude={"id"})
+        """
+        Replaces the model's attributes with those of a entity.
+        "None" on entity results in null in DB.
+
+        :param entity: the entity to take attributes from.
+        :raises ValueError: when types differ
+        """
+        if self.type != entity.type:
+            raise ValueError("Cannot change type.")
+        entity_dict = entity.dict(exclude={"id", "type"})
         self.url = entity_dict.pop("url")
         self.timeout = entity_dict.pop("timeout")
         self.jsonpath = entity_dict.pop("jsonpath")

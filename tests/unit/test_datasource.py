@@ -299,3 +299,32 @@ class TestDataSourceDBModel:
             "query": entity.query,
             "collection": entity.collection,
         }
+
+    def test_apply_update(self) -> None:
+        model = models.DataSource(
+            url="https://apixy.com",
+            jsonpath="*",
+            timeout=10,
+            type="http",
+            data={
+                "method": "PATCH",
+                "body": {},
+                "headers": {"Authorization": "API-KEY-1234"},
+            },
+        )
+        entity = HTTPDataSource(
+            url="https://apixy.cz",
+            jsonpath="*",
+            timeout=20,
+            method="GET",
+            body={},
+            headers={},
+        )
+        model.apply_update(entity)
+        assert model.url == entity.url
+        assert model.timeout == entity.timeout
+        assert model.data == {
+            "method": "GET",
+            "body": {},
+            "headers": {},
+        }
