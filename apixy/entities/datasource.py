@@ -46,7 +46,7 @@ def redis_cache(coroutine_method: Any) -> Any:
 
         data: Dict[str, Any] = await coroutine_method(self)
 
-        if self.cache_expire:
+        if self.cache_expire is not None and self.cache_expire > 0:
             await cache.json_set(self.name, data["result"], expire=self.cache_expire)
 
         return data
