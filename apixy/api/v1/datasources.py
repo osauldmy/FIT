@@ -9,6 +9,7 @@ from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
+from tortoise.transactions import in_transaction
 
 from apixy import models
 from apixy.config import SETTINGS
@@ -92,12 +93,14 @@ class DataSources:
         self, datasource_id: int, datasource_in: DataSourceInput
     ) -> Optional[Union[HTTPDataSource, SQLDataSource, MongoDBDataSource]]:
         """Updating an existing DataSource"""
-        model = DataSourcesDB.datasource_for_update(datasource_id)
-        if not await model.exists():
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND, "DataSource with this ID does not exist."
-            )
-        await model.update(**datasource_in.dict(exclude={"id"}))
+        async with in_transaction():
+            model = await DataSourcesDB.datasource_for_update(datasource_id).first()
+            if not model:
+                raise HTTPException(
+                    status.HTTP_404_NOT_FOUND, "DataSource with this ID does not exist."
+                )
+            model.apply_update(datasource_in)
+            await model.save()
         return None
 
     @router.delete(

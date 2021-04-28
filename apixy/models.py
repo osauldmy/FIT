@@ -78,5 +78,12 @@ class DataSource(ORMModel[DataSourceEntity], Model):
             data=entity_dict,
         )
 
+    def apply_update(self, entity: DataSourceEntity) -> None:
+        entity_dict = entity.dict(exclude_unset=True, exclude={"id"})
+        self.url = entity_dict.pop("url")
+        self.timeout = entity_dict.pop("timeout")
+        self.jsonpath = entity_dict.pop("jsonpath")
+        self.data.update(entity_dict)
+
 
 # TODO possibility to make own Dict encoder or decoder for JSONField
