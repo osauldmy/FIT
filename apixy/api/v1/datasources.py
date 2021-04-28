@@ -95,9 +95,14 @@ class DataSources:
         """Updating an existing DataSource"""
         async with in_transaction():
             model = await DataSourcesDB.datasource_for_update(datasource_id).first()
-            if not model:
+            if model is None:
                 raise HTTPException(
                     status.HTTP_404_NOT_FOUND, "DataSource with this ID does not exist."
+                )
+            if model.type != datasource_in.type:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    "Cannot change datasource type.",
                 )
             model.apply_update(datasource_in)
             await model.save()
