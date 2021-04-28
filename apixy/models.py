@@ -79,7 +79,7 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         )
 
     def apply_update(self, entity: DataSourceEntity) -> None:
-        entity_dict = entity.dict(exclude_unset=True, exclude={"id"})
+        entity_dict = entity.dict(exclude={"id"})
         self.url = entity_dict.pop("url")
         self.timeout = entity_dict.pop("timeout")
         self.jsonpath = entity_dict.pop("jsonpath")
