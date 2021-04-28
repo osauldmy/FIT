@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Final, Literal, Mapping, Optional, Type, Union
+from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type, Union
 
 import aiohttp
 import async_timeout
@@ -10,7 +10,7 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, Field, HttpUrl, validator
 
-from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
+from apixy.entities.shared import ForbidExtraModel
 
 
 class DataSource(ForbidExtraModel):
@@ -24,7 +24,7 @@ class DataSource(ForbidExtraModel):
     :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
-    id: Optional[int]
+    # id: Optional[int]
     url: AnyUrl
     jsonpath: str
     timeout: Optional[float] = Field(None, gt=0.0)
@@ -56,6 +56,7 @@ class HTTPDataSource(DataSource):
     method: Literal["GET", "POST", "PUT", "DELETE"]
     body: Optional[Dict[str, Any]]
     headers: Optional[Dict[str, Any]]
+    type: Annotated[str, Field(regex="http")] = "http"
 
     async def fetch_data(self) -> Dict[str, Any]:
         async with async_timeout.timeout(self.timeout):
@@ -77,6 +78,7 @@ class MongoDBDataSource(DataSource):
     database: str
     collection: str
     query: Dict[str, Any] = {}
+    type: Annotated[str, Field(regex="mongo")] = "mongo"
 
     async def fetch_data(self) -> Dict[str, Any]:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
@@ -94,6 +96,7 @@ class SQLDataSource(DataSource):
     """A datasource that fetches data from SQL database."""
 
     query: str
+    type: Annotated[str, Field(regex="sql")] = "sql"
 
     # TODO: sql validator (allow only select)
 
@@ -110,18 +113,18 @@ class SQLDataSource(DataSource):
 
 
 class HTTPDataSourceInput(HTTPDataSource):
-    class Config(OmitFieldsConfig, DataSource.Config):
-        omit_fields = ("id",)
+    class Config(DataSource.Config):
+        pass
 
 
 class MongoDbDataSourceInput(MongoDBDataSource):
-    class Config(OmitFieldsConfig, DataSource.Config):
-        omit_fields = ("id",)
+    class Config(DataSource.Config):
+        pass
 
 
 class SQLDataSourceInput(SQLDataSource):
-    class Config(OmitFieldsConfig, DataSource.Config):
-        omit_fields = ("id",)
+    class Config(DataSource.Config):
+        pass
 
 
 DataSourceInput = Union[HTTPDataSourceInput, MongoDbDataSourceInput, SQLDataSourceInput]
