@@ -35,7 +35,7 @@ class DataSource(ForbidExtraModel):
 
     @validator("jsonpath")
     @classmethod
-    def validate_json_path(cls, value: str) -> jmespath.parser.ParsedResult:
+    def validate_json_path(cls, value: str) -> str:
         """Validator for jmespath strings"""
         try:
             jmespath.compile(value)
