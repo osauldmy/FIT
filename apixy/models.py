@@ -72,7 +72,7 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         entity_dict = entity.dict(exclude={"id"})
         return cls(
             url=str(entity_dict.pop("url")),
-            type=entity.schema()["title"].replace("DataSourceInput", "").lower(),
+            type=entity_dict.pop("type"),
             jsonpath=entity_dict.pop("jsonpath"),
             timeout=entity_dict.pop("timeout"),
             data=entity_dict,
