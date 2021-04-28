@@ -116,7 +116,7 @@ class HTTPDataSourceInput(HTTPDataSource):
         omit_fields = ("id",)
 
 
-class MongoDbDataSourceInput(MongoDBDataSource):
+class MongoDBDataSourceInput(MongoDBDataSource):
     class Config(DataSource.Config):
         omit_fields = ("id",)
 
@@ -126,7 +126,7 @@ class SQLDataSourceInput(SQLDataSource):
         omit_fields = ("id",)
 
 
-DataSourceInput = Union[HTTPDataSourceInput, MongoDbDataSourceInput, SQLDataSourceInput]
+DataSourceInput = Union[HTTPDataSourceInput, MongoDBDataSourceInput, SQLDataSourceInput]
 
 DATA_SOURCES: Final[Mapping[str, Type[DataSource]]] = {
     "http": HTTPDataSource,

@@ -67,12 +67,10 @@ class DataSources:
         self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
     ) -> List[DataSourceUnion]:
         """Endpoint for GET"""
-        tmp = [
-            p.to_pydantic()
+        return [
+            DataSourceUnion.parse_obj(p.to_pydantic())
             for p in await DataSourcesDB.get_paginated_datasources(limit, offset)
         ]
-        print(tmp[0].json())
-        return [DataSourceUnion.parse_obj(i) for i in tmp]
 
     @router.post(
         PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
@@ -117,7 +115,8 @@ class DataSources:
 
 
 class DataSourcesDB:
-    async def url_exists(self, url: str, exclude_id: Optional[int] = None) -> bool:
+    @staticmethod
+    async def url_exists(url: str, exclude_id: Optional[int] = None) -> bool:
         """
         Check if a data source with passed url exists, excluding a specific ID.
 
