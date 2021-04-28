@@ -239,8 +239,7 @@ class TestMongoDBDataSource:
 
 
 class TestDataSourceDBModel:
-    @staticmethod
-    def test_http_datasource_from_pydantic() -> None:
+    def test_http_datasource_from_pydantic(self) -> None:
         entity = HTTPDataSource(
             url="https://apixy.com",
             method="POST",
@@ -260,8 +259,7 @@ class TestDataSourceDBModel:
             "headers": entity.headers,
         }
 
-    @staticmethod
-    def test_mongo_datasource_from_pydantic() -> None:
+    def test_mongo_datasource_from_pydantic(self) -> None:
         entity = MongoDBDataSource(
             url="mongodb://some.url",
             database="foo",
@@ -280,8 +278,7 @@ class TestDataSourceDBModel:
             "collection": entity.collection,
         }
 
-    @staticmethod
-    def test_sql_datasource_from_pydantic() -> None:
+    def test_sql_datasource_from_pydantic(self) -> None:
         entity = MongoDBDataSource(
             url="mongodb://some.url",
             database="foo",
