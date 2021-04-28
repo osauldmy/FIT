@@ -6,7 +6,7 @@ import pydantic
 import pytest
 
 from apixy import models
-from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource
+from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
 
@@ -279,22 +279,19 @@ class TestDataSourceDBModel:
         }
 
     def test_sql_datasource_from_pydantic(self) -> None:
-        entity = MongoDBDataSource(
-            url="mongodb://some.url",
-            database="foo",
-            collection="bar",
+        entity = SQLDataSource(
+            url="sqlite://localhost",
             jsonpath="[*]",
-            query={},
+            timeout=10,
+            query="SELECT * FROM table;",
         )
         model = models.DataSource.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
-        assert model.type == "mongo"
+        assert model.type == "sql"
         assert model.data == {
-            "database": entity.database,
             "query": entity.query,
-            "collection": entity.collection,
         }
 
     def test_apply_update(self) -> None:
