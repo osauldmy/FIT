@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, Type, TypeVar
 
 from pydantic import BaseModel
 from tortoise import fields
 from tortoise.models import Model
 
-from apixy.entities.datasource import DataSource as DataSourceEntityBase
-from apixy.entities.datasource import HTTPDataSource as HTTPDataSourceEntity
-from apixy.entities.datasource import MongoDBDataSource as MongoDBDataSourceEntity
-from apixy.entities.datasource import SQLDataSource as SQLDataSourceEntity
+from apixy.entities.datasource import DATA_SOURCES
+from apixy.entities.datasource import DataSource as DataSourceEntity
 from apixy.entities.project import Project as ProjectEntity
 
 Entity = TypeVar("Entity", bound=BaseModel)
@@ -36,6 +34,9 @@ class Project(ORMModel[ProjectEntity], Model):
     name = fields.CharField(64)
     description = fields.CharField(512, null=True)
 
+    class Meta:
+        table = "Project"
+
     def to_pydantic(self) -> ProjectEntity:
         return ProjectEntity.from_orm(self)
 
@@ -44,60 +45,40 @@ class Project(ORMModel[ProjectEntity], Model):
         return cls(**entity.dict())
 
 
-class DataSource(Model):
+class DataSource(ORMModel[DataSourceEntity], Model):
+    """The DB entity for DataSource"""
 
-    url = fields.CharField(max_length=255)
-    jsonpath = fields.CharField(max_length=255)
-    timeout = fields.FloatField(default=0.0)
-
-
-class HTTPDataSource(ORMModel[DataSourceEntityBase, HTTPDataSourceEntity], DataSource):
-
-    method = fields.CharField(31)
-    body = fields.JSONField()
-    headers = fields.JSONField()
+    # todo: add n:n decomposition
+    id = fields.IntField(pk=True)
+    url = fields.CharField(max_length=1024)
+    type = fields.CharField(max_length=32)
+    jsonpath = fields.CharField(max_length=128)
+    timeout = fields.FloatField(null=True)
+    data = fields.JSONField()
 
     class Meta:
-        table = "HTTPDataSource"
+        table = "DataSource"
 
-    def to_pydantic(self) -> HTTPDataSourceEntity:
-        return HTTPDataSourceEntity.from_orm(self)
-
-    @classmethod
-    def from_pydantic(cls, entity: DataSourceEntityBase) -> HTTPDataSource:
-        return cls(**entity.dict())
-
-
-class MongoDBDataSource(
-    ORMModel[DataSourceEntityBase, MongoDBDataSourceEntity], DataSource
-):
-    database = fields.CharField(63)
-    collection = fields.CharField(63)
-    query = fields.JSONField()
-
-    class Meta:
-        table = "MongoDBDataSource"
-
-    def to_pydantic(self) -> MongoDBDataSourceEntity:
-        return MongoDBDataSourceEntity.from_orm(self)
+    def to_pydantic(self) -> DataSourceEntity:
+        """
+        :raises KeyError: on wrong datasource name in `type`
+        :raises pydantic.ValidationError: on wrong data passed to entity initializer
+        """
+        datasource_class: Type[DataSourceEntity] = DATA_SOURCES[self.type]
+        return datasource_class(
+            url=self.url, jsonpath=self.jsonpath, timeout=self.timeout, **self.data
+        )
 
     @classmethod
-    def from_pydantic(cls, entity: DataSourceEntityBase) -> MongoDBDataSource:
-        return cls(**entity.dict())
-
-
-class SQLDataSource(ORMModel[DataSourceEntityBase, SQLDataSourceEntity], DataSource):
-    query = fields.TextField()
-
-    class Meta:
-        table = "SQLDataSource"
-
-    def to_pydantic(self) -> SQLDataSourceEntity:
-        return SQLDataSourceEntity.from_orm(self)
-
-    @classmethod
-    def from_pydantic(cls, entity: DataSourceEntityBase) -> SQLDataSource:
-        return cls(**entity.dict())
+    def from_pydantic(cls, entity: DataSourceEntity) -> DataSource:
+        entity_dict = entity.dict()
+        return cls(
+            url=str(entity_dict.pop("url")),
+            type=entity.schema()["title"].replace("DataSourceInput", "").lower(),
+            jsonpath=entity_dict.pop("jsonpath"),
+            timeout=entity_dict.pop("timeout"),
+            data=entity_dict,
+        )
 
 
 # TODO possibility to make own Dict encoder or decoder for JSONField

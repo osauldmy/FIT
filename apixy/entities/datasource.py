@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Final, Literal, Mapping, Optional, Type, Union
 
 import aiohttp
 import async_timeout
@@ -10,7 +10,7 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, Field, HttpUrl, validator
 
-from apixy.entities.shared import ForbidExtraModel
+from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
 
 class DataSource(ForbidExtraModel):
@@ -24,9 +24,11 @@ class DataSource(ForbidExtraModel):
     :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
+    id: Optional[int]
     url: AnyUrl
     jsonpath: str
     timeout: Optional[float] = Field(None, gt=0.0)
+    type: str
 
     @validator("jsonpath")
     @classmethod
@@ -77,7 +79,6 @@ class MongoDBDataSource(DataSource):
     query: Dict[str, Any] = {}
 
     async def fetch_data(self) -> Dict[str, Any]:
-
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
         cursor = client[self.database][self.collection].find(self.query)
         try:
@@ -106,3 +107,27 @@ class SQLDataSource(DataSource):
                 [dict(row) for row in rows]
             )
         }
+
+
+class HTTPDataSourceInput(HTTPDataSource):
+    class Config(OmitFieldsConfig, DataSource.Config):
+        omit_fields = ("id",)
+
+
+class MongoDbDataSourceInput(MongoDBDataSource):
+    class Config(OmitFieldsConfig, DataSource.Config):
+        omit_fields = ("id",)
+
+
+class SQLDataSourceInput(SQLDataSource):
+    class Config(OmitFieldsConfig, DataSource.Config):
+        omit_fields = ("id",)
+
+
+DataSourceInput = Union[HTTPDataSourceInput, MongoDbDataSourceInput, SQLDataSourceInput]
+
+DATA_SOURCES: Final[Mapping[str, Type[DataSource]]] = {
+    "http": HTTPDataSource,
+    "mongodb": MongoDBDataSource,
+    "sql": SQLDataSource,
+}
