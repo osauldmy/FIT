@@ -10,7 +10,7 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, Field, HttpUrl, validator
 
-from apixy.entities.shared import ForbidExtraModel
+from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
 
 class DataSource(ForbidExtraModel):
@@ -112,17 +112,17 @@ class SQLDataSource(DataSource):
 
 
 class HTTPDataSourceInput(HTTPDataSource):
-    class Config(DataSource.Config):
+    class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
 
 
 class MongoDBDataSourceInput(MongoDBDataSource):
-    class Config(DataSource.Config):
+    class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
 
 
 class SQLDataSourceInput(SQLDataSource):
-    class Config(DataSource.Config):
+    class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
 
 
