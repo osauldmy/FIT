@@ -22,30 +22,41 @@ class TestHTTPDataSource:
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "",  # empty jmespath
+                "type": "http",
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "a": "b",  # extra attribute
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "headers": [""],  # wrong attr type
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "body": [""],  # wrong attr type
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "timeout": -1,  # constraint failure
+            },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "type": "peepo",  # wrong type
             },
         ),
     )
@@ -57,17 +68,24 @@ class TestHTTPDataSource:
     @pytest.mark.parametrize(
         "raw_datasource",
         (
-            {"url": "https://google.com", "method": "GET", "jsonpath": "*"},
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
+            },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "type": "http",
                 "headers": {},
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "body": [],  # somehow it works...
                 "headers": [],  # somehow it works...
             },
@@ -75,6 +93,7 @@ class TestHTTPDataSource:
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
                 "headers": {"Token": "Foo"},
             },
         ),
@@ -92,6 +111,7 @@ class TestHTTPDataSource:
                     "url": "http://httpbin.org/get",
                     "method": "GET",
                     "jsonpath": "[*]",
+                    "type": "http",
                 },
                 ["a", "b"],
                 ["a", "b"],
@@ -101,6 +121,7 @@ class TestHTTPDataSource:
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*]",
+                    "type": "http",
                 },
                 PAYLOAD_SPACEX_ROCKETS,
                 PAYLOAD_SPACEX_ROCKETS,
@@ -110,6 +131,7 @@ class TestHTTPDataSource:
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*].name",
+                    "type": "http",
                 },
                 PAYLOAD_SPACEX_ROCKETS,
                 ["Falcon 1", "Falcon 9", "Falcon Heavy", "Starship"],
@@ -119,6 +141,7 @@ class TestHTTPDataSource:
                     "url": "https://api.spacexdata.com/v4/rockets",
                     "method": "GET",
                     "jsonpath": "[*].[name,success_rate_pct]",
+                    "type": "http",
                     "headers": {"Token": "Foo"},
                 },
                 PAYLOAD_SPACEX_ROCKETS,
@@ -136,7 +159,6 @@ class TestHTTPDataSource:
         payload: List[Any],
         fetched_payload: List[Any],
     ) -> None:
-
         http_datasource = HTTPDataSource(**raw_datasource)
         with aioresponses.aioresponses() as mock:
             mock.add(
@@ -161,6 +183,7 @@ class TestMongoDBDataSource:
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "type": "http",
             },  # HTTP, not MongoDB
             {
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
@@ -180,6 +203,7 @@ class TestMongoDBDataSource:
             {
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
+                "type": "mongo",
                 "database": "foo",
                 "collection": "bar",
                 "query": {},
@@ -187,6 +211,7 @@ class TestMongoDBDataSource:
             {
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
+                "type": "mongo",
                 "database": "foo",
                 "collection": "bar",
                 # empty query is also ok
@@ -194,6 +219,7 @@ class TestMongoDBDataSource:
             {
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
+                "type": "mongo",
                 "database": "foo",
                 "collection": "bar",
                 "query": {"a": "b"},
@@ -211,6 +237,7 @@ class TestMongoDBDataSource:
             database="foo",
             collection="bar",
             jsonpath="[*]",
+            type="mongo",
             query={},
         )
         payload = [{"foo": "bar"}, {"bar": "baz"}]
