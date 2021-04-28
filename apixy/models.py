@@ -60,12 +60,26 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         """
         datasource_class: Type[DataSourceEntity] = DATA_SOURCES[self.type]
         return datasource_class(
-            url=self.url, jsonpath=self.jsonpath, timeout=self.timeout, **self.data
+            id=self.id,
+            url=self.url,
+            jsonpath=self.jsonpath,
+            timeout=self.timeout,
+            **self.data
         )
 
     @classmethod
     def from_pydantic(cls, entity: DataSourceEntity) -> DataSource:
         entity_dict = entity.dict()
+        entity_id = entity_dict.pop("id")
+        if entity_id:
+            return cls(
+                id=entity_id,
+                url=str(entity_dict.pop("url")),
+                type=entity.schema()["title"].replace("DataSourceInput", "").lower(),
+                jsonpath=entity_dict.pop("jsonpath"),
+                timeout=entity_dict.pop("timeout"),
+                data=entity_dict,
+            )
         return cls(
             url=str(entity_dict.pop("url")),
             type=entity.schema()["title"].replace("DataSourceInput", "").lower(),

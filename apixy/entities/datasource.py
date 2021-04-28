@@ -24,11 +24,10 @@ class DataSource(ForbidExtraModel):
     :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
-    # Added because how models.py is implemented. (Probably not needed)
     class Config:
         orm_mode = True
 
-    # id: Optional[int]
+    id: Optional[int]
     url: AnyUrl
     jsonpath: str
     timeout: Optional[float] = Field(None, gt=0.0)
@@ -114,17 +113,17 @@ class SQLDataSource(DataSource):
 
 class HTTPDataSourceInput(HTTPDataSource):
     class Config(DataSource.Config):
-        pass
+        omit_fields = ("id",)
 
 
 class MongoDbDataSourceInput(MongoDBDataSource):
     class Config(DataSource.Config):
-        pass
+        omit_fields = ("id",)
 
 
 class SQLDataSourceInput(SQLDataSource):
     class Config(DataSource.Config):
-        pass
+        omit_fields = ("id",)
 
 
 DataSourceInput = Union[HTTPDataSourceInput, MongoDbDataSourceInput, SQLDataSourceInput]

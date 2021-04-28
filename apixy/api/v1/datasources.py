@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # as that was duplicating the prefix (I suspect the @cbv decorator to be the cause)
 PREFIX: Final[str] = "/datasources"
 
-router = APIRouter(tags=["data sources"])
+router = APIRouter(tags=["DataSources"])
 
 
 class DataSourceUnion(BaseModel):
