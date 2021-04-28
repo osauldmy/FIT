@@ -29,7 +29,7 @@ PREFIX: Final[str] = "/datasources"
 router = APIRouter(tags=["data sources"])
 
 
-class EitherItem(BaseModel):
+class DataSourceUnion(BaseModel):
     __root__: Union[HTTPDataSource, MongoDBDataSource, SQLDataSource]
 
 
@@ -49,30 +49,30 @@ class DataSources:
 
     @router.get(
         PREFIX + "/{datasource_id}",
-        response_model=EitherItem,
+        response_model=DataSourceUnion,
     )
-    async def get(self, datasource_id: int) -> EitherItem:
+    async def get(self, datasource_id: int) -> DataSourceUnion:
         """Endpoint for a single data source."""
         try:
             queryset = await models.DataSource.get(id=datasource_id)
-            return EitherItem.parse_obj(queryset.to_pydantic())
+            return DataSourceUnion.parse_obj(queryset.to_pydantic())
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
     @router.get(
         PREFIX + "/",
-        response_model=List[EitherItem],
+        response_model=List[DataSourceUnion],
     )
     async def get_list(
         self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
-    ) -> List[EitherItem]:
+    ) -> List[DataSourceUnion]:
         """Endpoint for GET"""
         tmp = [
             p.to_pydantic()
             for p in await DataSourcesDB.get_paginated_datasources(limit, offset)
         ]
         print(tmp[0].json())
-        return [EitherItem.parse_obj(i) for i in tmp]
+        return [DataSourceUnion.parse_obj(i) for i in tmp]
 
     @router.post(
         PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
