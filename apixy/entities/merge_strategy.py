@@ -1,6 +1,5 @@
 from abc import abstractmethod
-from enum import Enum
-from typing import Any, Iterable, cast
+from typing import Any, Final, Iterable, Mapping
 
 from apixy.entities.shared import ForbidExtraModel
 
@@ -33,13 +32,6 @@ class ConcatenationMergeStrategy(MergeStrategy):
         return {str(index): each for index, each in enumerate(data)}
 
 
-class MergeStrategyEnum(Enum):
-    CONCATENATION = ConcatenationMergeStrategy
-    # ... to be continued
-
-    @staticmethod
-    def from_str(value: str) -> MergeStrategy:
-        """
-        :raises KeyError: on non-existing MergeStrategy string value
-        """
-        return cast(MergeStrategy, MergeStrategyEnum[value.upper()].value())
+MERGE_STRATEGY_MAPPING: Final[Mapping[str, MergeStrategy]] = {
+    "concatenation": ConcatenationMergeStrategy(),
+}
