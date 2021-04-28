@@ -34,9 +34,6 @@ class Project(ORMModel[ProjectEntity], Model):
     name = fields.CharField(64)
     description = fields.CharField(512, null=True)
 
-    class Meta:
-        table = "project"
-
     def to_pydantic(self) -> ProjectEntity:
         return ProjectEntity.from_orm(self)
 
@@ -55,9 +52,6 @@ class DataSource(ORMModel[DataSourceEntity], Model):
     jsonpath = fields.CharField(max_length=128)
     timeout = fields.FloatField(null=True)
     data = fields.JSONField()
-
-    class Meta:
-        table = "datasource"
 
     def to_pydantic(self) -> DataSourceEntity:
         """
