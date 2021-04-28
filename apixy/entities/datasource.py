@@ -24,6 +24,10 @@ class DataSource(ForbidExtraModel):
     :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
+    # Added because how models.py is implemented. (Probably not needed)
+    class Config:
+        orm_mode = True
+
     # id: Optional[int]
     url: AnyUrl
     jsonpath: str
@@ -43,10 +47,6 @@ class DataSource(ForbidExtraModel):
     @abstractmethod
     async def fetch_data(self) -> Dict[str, Any]:
         """Fetches data as defined by the instance's attributes"""
-
-    # Added because how models.py is implemented. (Probably not needed)
-    class Config:
-        orm_mode = True
 
 
 class HTTPDataSource(DataSource):
