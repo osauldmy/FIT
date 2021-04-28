@@ -35,7 +35,7 @@ class Project(ORMModel[ProjectEntity], Model):
     description = fields.CharField(512, null=True)
 
     class Meta:
-        table = "Project"
+        table = "project"
 
     def to_pydantic(self) -> ProjectEntity:
         return ProjectEntity.from_orm(self)
@@ -57,7 +57,7 @@ class DataSource(ORMModel[DataSourceEntity], Model):
     data = fields.JSONField()
 
     class Meta:
-        table = "DataSource"
+        table = "datasource"
 
     def to_pydantic(self) -> DataSourceEntity:
         """
