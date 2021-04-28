@@ -117,7 +117,6 @@ class DataSources:
 
 
 class DataSourcesDB:
-    # @staticmethod
     async def url_exists(self, url: str, exclude_id: Optional[int] = None) -> bool:
         """
         Check if a data source with passed url exists, excluding a specific ID.
