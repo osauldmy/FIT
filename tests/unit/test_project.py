@@ -40,3 +40,9 @@ def test_dashed_slug(sample_project_data: Dict[str, Any]) -> None:
     with pytest.raises(ValidationError):
         sample_project_data.update(slug="cool-slug-")
         Project(**sample_project_data)
+
+
+def test_invalid_merge_strategy(sample_project_data: Dict[str, Any]) -> None:
+    with pytest.raises(ValidationError):
+        sample_project_data.update(merge_strategy="conCATeNATION")
+        Project(**sample_project_data)
