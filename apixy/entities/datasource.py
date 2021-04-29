@@ -44,7 +44,7 @@ class DataSource(ForbidExtraModel):
             raise ValueError("Invalid JsonPath") from exception
 
     @abstractmethod
-    async def fetch_data(self) -> Dict[str, Any]:
+    async def fetch_data(self) -> Any:
         """Fetches data as defined by the instance's attributes"""
 
 
@@ -57,7 +57,7 @@ class HTTPDataSource(DataSource):
     headers: Optional[Dict[str, Any]]
     type: Annotated[str, Field(regex="http")] = "http"
 
-    async def fetch_data(self) -> Dict[str, Any]:
+    async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
             async with aiohttp.ClientSession() as session:
                 async with session.request(
@@ -68,7 +68,7 @@ class HTTPDataSource(DataSource):
                 ) as response:
                     data = await response.json()
 
-        return {"result": jmespath.compile(self.jsonpath).search(data)}
+        return jmespath.compile(self.jsonpath).search(data)
 
 
 class MongoDBDataSource(DataSource):
@@ -79,7 +79,7 @@ class MongoDBDataSource(DataSource):
     query: Dict[str, Any] = {}
     type: Annotated[str, Field(regex="mongo")] = "mongo"
 
-    async def fetch_data(self) -> Dict[str, Any]:
+    async def fetch_data(self) -> Any:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
         cursor = client[self.database][self.collection].find(self.query)
         try:
@@ -88,7 +88,7 @@ class MongoDBDataSource(DataSource):
         finally:
             await cursor.close()
 
-        return {"result": jmespath.compile(self.jsonpath).search(data)}
+        return jmespath.compile(self.jsonpath).search(data)
 
 
 class SQLDataSource(DataSource):
@@ -99,16 +99,12 @@ class SQLDataSource(DataSource):
 
     # TODO: sql validator (allow only select)
 
-    async def fetch_data(self) -> Dict[str, Any]:
+    async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
             async with databases.Database(self.url) as database:
                 rows = await database.fetch_all(query=self.query)
 
-        return {
-            "result": jmespath.compile(self.jsonpath).search(
-                [dict(row) for row in rows]
-            )
-        }
+        return jmespath.compile(self.jsonpath).search([dict(row) for row in rows])
 
 
 class HTTPDataSourceInput(HTTPDataSource):

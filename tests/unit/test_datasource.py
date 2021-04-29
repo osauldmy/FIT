@@ -157,7 +157,7 @@ class TestHTTPDataSource:
             )
 
             data = await http_datasource.fetch_data()
-        assert data["result"] == fetched_payload
+        assert data == fetched_payload
 
 
 class TestMongoDBDataSource:
@@ -235,7 +235,7 @@ class TestMongoDBDataSource:
             cursor_mock.return_value.to_list.assert_awaited_once()
             cursor_mock.return_value.close.assert_awaited_once()
 
-        assert data["result"] == payload
+        assert data == payload
 
 
 class TestDataSourceDBModel:
