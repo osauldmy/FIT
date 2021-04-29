@@ -30,7 +30,7 @@ class DataSource(ForbidExtraModel):
     id: Optional[int]
     url: AnyUrl
     jsonpath: str
-    timeout: Optional[float] = Field(None, gt=0.0)
+    timeout: Optional[float] = Field(60, gt=0.0)
     type: str
 
     @validator("jsonpath")
@@ -53,8 +53,8 @@ class HTTPDataSource(DataSource):
 
     url: HttpUrl
     method: Literal["GET", "POST", "PUT", "DELETE"]
-    body: Optional[Dict[str, Any]]
-    headers: Optional[Dict[str, Any]]
+    body: Optional[Dict[str, Any]] = None
+    headers: Optional[Dict[str, Any]] = None
     type: Annotated[str, Field(regex="http")] = "http"
 
     async def fetch_data(self) -> Any:
@@ -81,9 +81,11 @@ class MongoDBDataSource(DataSource):
 
     async def fetch_data(self) -> Any:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
-        cursor = client[self.database][self.collection].find(self.query)
         try:
             async with async_timeout.timeout(self.timeout):
+                cursor = client[self.database][self.collection].find(
+                    self.query, {"_id": False}
+                )
                 data = await cursor.to_list(None)
         finally:
             await cursor.close()
