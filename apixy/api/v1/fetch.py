@@ -1,4 +1,3 @@
-import logging
 from typing import Final, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -7,8 +6,6 @@ from tortoise.exceptions import DoesNotExist
 
 from apixy import models
 from apixy.api.v1.datasources import DataSourceUnion
-
-logger = logging.getLogger(__name__)
 
 PREFIX_USER: Final[str] = "/collect"  # TODO: discuss possible prefixes
 
