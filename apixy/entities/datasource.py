@@ -130,6 +130,6 @@ DataSourceInput = Union[HTTPDataSourceInput, MongoDBDataSourceInput, SQLDataSour
 
 DATA_SOURCES: Final[Mapping[str, Type[DataSource]]] = {
     "http": HTTPDataSource,
-    "mongodb": MongoDBDataSource,
+    "mongo": MongoDBDataSource,
     "sql": SQLDataSource,
 }
