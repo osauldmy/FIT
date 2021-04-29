@@ -72,7 +72,7 @@ class Projects:
         )
 
     @router.post(
-        PREFIX + "/{project_id}/add",
+        PREFIX + "/{project_id}/add/{datasource_id}",
         status_code=status.HTTP_201_CREATED,
         response_class=Response,
     )
@@ -81,6 +81,11 @@ class Projects:
         try:
             project = await models.Project.get(id=project_id)
             data_source = await models.DataSource.get(id=datasource_id)
+            if project.sources.filter(Q(id=datasource_id)).exists():
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT,
+                    "Datasource already exists in this project",
+                )
             await project.sources.add(data_source)
             return Response(
                 status_code=status.HTTP_201_CREATED,
