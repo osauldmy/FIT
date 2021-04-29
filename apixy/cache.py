@@ -1,18 +1,35 @@
 """Module for RedisJSON cache helper functions"""
 import json
-from typing import Optional, cast
+from functools import wraps
+from typing import Any, Dict
 
 from apixy.app import app
-from apixy.entities.shared import JSON
 
 
-async def json_set(key: str, data: JSON, expire: Optional[int] = None) -> None:
-    await app.state.redis.execute("JSON.SET", key, ".", json.dumps(data))
-    if expire:
-        await app.state.redis.execute("EXPIRE", key, expire)
+def redis_cache(coroutine_method: Any) -> Any:
+    """
+    A decorator to enforce DRY on caching for datasources.
+    """
 
+    @wraps(coroutine_method)
+    async def wrapper(self: Any) -> Dict[str, Any]:
+        """
+        Caching routines.
+        """
+        if (
+            self.cache_expire is not None
+            and self.cache_expire >= 0
+            and (cached := await app.state.redis.get(self.name))
+        ):
+            return {"result": json.loads(cached)}
 
-async def json_get(key: str) -> Optional[JSON]:
-    if cached := await app.state.redis.execute("JSON.GET", key):
-        return cast(JSON, json.loads(cached))
-    return None
+        data: Dict[str, Any] = await coroutine_method(self)
+
+        if self.cache_expire is not None and self.cache_expire >= 0:
+            await app.state.redis.set(
+                self.name, json.dumps(data["result"]), expire=self.cache_expire
+            )
+
+        return data
+
+    return wrapper

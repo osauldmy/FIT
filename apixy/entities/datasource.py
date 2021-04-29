@@ -12,7 +12,7 @@ import jmespath
 import motor.motor_asyncio
 from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
-from apixy import cache
+from apixy.cache import redis_cache
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
 from .validators import validate_nonzero_length
@@ -27,33 +27,6 @@ class DataSourceFetchError(Exception):
     """
 
 
-def redis_cache(coroutine_method: Any) -> Any:
-    """
-    A decorator to enforce DRY on caching for datasources.
-    """
-
-    @wraps(coroutine_method)
-    async def wrapper(self: Any) -> Dict[str, Any]:
-        """
-        Caching routines.
-        """
-        if (
-            self.cache_expire is not None
-            and self.cache_expire > 0  # paranoid thing, even if pydantic checks this
-            and (cached := await cache.json_get(self.name))
-        ):
-            return {"result": cached}
-
-        data: Dict[str, Any] = await coroutine_method(self)
-
-        if self.cache_expire is not None and self.cache_expire > 0:
-            await cache.json_set(self.name, data["result"], expire=self.cache_expire)
-
-        return data
-
-    return wrapper
-
-
 class DataSource(ForbidExtraModel):
     """
     An interface for fetching data from a remote source
@@ -62,7 +35,8 @@ class DataSource(ForbidExtraModel):
     :param url: URI (http(s), database etc)
     :param jsonpath: JMESPath (https://jmespath.org/) query string
     :param timeout: a float timeout value (in seconds)
-    :param cache_expire: an int value for cache expiration (in seconds)
+    :param cache_expire: an int value for cache expiration time (in seconds).
+                         Does not expire if 0.
     """
 
     class Config:
