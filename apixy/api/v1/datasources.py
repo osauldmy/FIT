@@ -31,7 +31,7 @@ router = APIRouter(tags=["DataSources"])
 
 
 @cbv(router)
-class DataSources:
+class DataSourcesView:
     """Provides CRUD for data sources."""
 
     @staticmethod

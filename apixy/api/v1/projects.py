@@ -34,7 +34,7 @@ async def get_project_by_id(project_id: int) -> ProjectModel:
 
 
 @cbv(router)
-class Projects:
+class ProjectsView:
     """Provides CRUD for Projects"""
 
     @staticmethod
@@ -115,7 +115,7 @@ class Projects:
 
 
 @cbv(router)
-class ProjectDataSources:
+class ProjectsDataSourcesView:
     project: ProjectModel = Depends(get_project_by_id)
 
     @router.put(
