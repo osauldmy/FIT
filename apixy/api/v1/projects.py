@@ -68,17 +68,14 @@ class ProjectsView:
         ]
 
     @router.post(PREFIX + "/")
-    async def create(self, project_in: ProjectInput) -> Response:
+    async def create(self, project_in: ProjectInput, response: Response) -> None:
         """Creating a new Project"""
         if await ProjectsDB.slug_exists(project_in.slug):
             raise HTTPException(
                 status.HTTP_409_CONFLICT, "Project with this slug already exists."
             )
         project_id = await ProjectsDB.save_project(project_in)
-        return Response(
-            status_code=status.HTTP_201_CREATED,
-            headers={"Location": self.get_project_link(project_id)},
-        )
+        response.headers.update({"Location": self.get_project_link(project_id)})
 
     @router.put(PREFIX + "/{project_id}")
     async def update(

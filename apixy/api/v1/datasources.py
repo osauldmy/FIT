@@ -58,7 +58,7 @@ class DataSourcesView:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
     @router.get(
-        PREFIX + "/",
+        PREFIX,
         response_model=List[DataSourceUnion],
     )
     async def get_list(
@@ -72,14 +72,11 @@ class DataSourcesView:
             )
         ]
 
-    @router.post(PREFIX + "/")
-    async def create(self, datasource_in: DataSourceInput) -> Response:
+    @router.post(PREFIX)
+    async def create(self, datasource_in: DataSourceInput, response: Response) -> None:
         """Creating a new data source"""
         datasource = await DataSourcesDB.save_datasource(datasource_in)
-        return Response(
-            status_code=status.HTTP_201_CREATED,
-            headers={"Location": self.get_datasource_url(datasource)},
-        )
+        response.headers.update({"Location": self.get_datasource_url(datasource)})
 
     @router.put(PREFIX + "/{datasource_id}")
     async def update(
