@@ -1,7 +1,7 @@
 import logging
 from typing import Final, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 # settings this as a constant instead of an argument for the APIRouter constructor
 # as that was duplicating the prefix (I suspect the @cbv decorator to be the cause)
 PREFIX: Final[str] = "/projects"
-PREFIX_USER: Final[str] = "/collect"  # TODO: discuss possible prefixes
 
 router = APIRouter(tags=["Projects"])
 
@@ -92,27 +91,9 @@ class Projects:
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
-    # TODO: add appropriate data response model
-    @router.get(PREFIX_USER + "/{project_slug}", response_model=List[DataSourceUnion])
-    async def fetch(
-        self,
-        project_slug: Optional[str] = Query(
-            None, max_length=64, regex="^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$"
-        ),
-    ) -> List[DataSourceUnion]:
-        """Fetches and aggregates all data sources tied to project slug."""
-        try:
-            project = await models.Project.get(slug=project_slug)
-            await project.fetch_related("sources")
-            # TODO: add fetching functionality
-            return [
-                DataSourceUnion.parse_obj(i.to_pydantic())
-                for i in list(project.sources)
-            ]
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
-
-    @router.get(PREFIX + "/{project_id}/list", response_model=List[DataSourceUnion])
+    @router.get(
+        PREFIX + "/{project_id}/datasources", response_model=List[DataSourceUnion]
+    )
     async def list(self, project_id: int) -> List[DataSourceUnion]:
         """List all data sources tied to a project id."""
         try:
