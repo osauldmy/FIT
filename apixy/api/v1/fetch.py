@@ -1,15 +1,17 @@
 from typing import Final, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import HTTPException, Query
 from starlette import status
 from tortoise.exceptions import DoesNotExist
 
 from apixy.models import ProjectModel
 from apixy.entities.proxy_response import ProxyResponse
 
+from .shared import ApixyRouter
+
 PREFIX_USER: Final[str] = "/collect"  # TODO: discuss possible prefixes
 
-router = APIRouter(tags=["FetchRouter"])
+router = ApixyRouter(tags=["FetchRouter"])
 
 
 @router.get(PREFIX_USER + "/{project_slug}", response_model=ProxyResponse)

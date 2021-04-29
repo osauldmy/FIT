@@ -1,7 +1,7 @@
 import logging
 from typing import Final, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -21,13 +21,15 @@ from apixy.entities.datasource import (
 )
 from apixy.models import DataSourceModel
 
+from .shared import ApixyRouter
+
 logger = logging.getLogger(__name__)
 
 # settings this as a constant instead of an argument for the APIRouter constructor
 # as that was duplicating the prefix (I suspect the @cbv decorator to be the cause)
 PREFIX: Final[str] = "/datasources"
 
-router = APIRouter(tags=["DataSources"])
+router = ApixyRouter(tags=["DataSources"])
 
 
 @cbv(router)
@@ -69,9 +71,7 @@ class DataSourcesView:
             for p in await DataSourcesDB.get_paginated_datasources(limit, offset)
         ]
 
-    @router.post(
-        PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
-    )
+    @router.post(PREFIX + "/")
     async def create(self, datasource_in: DataSourceInput) -> Response:
         """Creating a new data source"""
         datasource = await DataSourcesDB.save_datasource(datasource_in)
@@ -80,11 +80,7 @@ class DataSourcesView:
             headers={"Location": self.get_datasource_url(datasource)},
         )
 
-    @router.put(
-        PREFIX + "/{datasource_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.put(PREFIX + "/{datasource_id}")
     async def update(
         self, datasource_id: int, datasource_in: DataSourceInput
     ) -> Optional[Union[HTTPDataSource, SQLDataSource, MongoDBDataSource]]:
@@ -104,11 +100,7 @@ class DataSourcesView:
             await model.save()
         return None
 
-    @router.delete(
-        PREFIX + "/{datasource_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.delete(PREFIX + "/{datasource_id}")
     async def delete(self, datasource_id: int) -> Optional[Response]:
         """Deleting a DataSource"""
         queryset = DataSourcesDB.datasource_for_update(datasource_id)

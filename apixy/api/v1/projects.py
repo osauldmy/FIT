@@ -1,7 +1,7 @@
 import logging
 from typing import Final, List, Optional, Union
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -9,10 +9,12 @@ from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 
-from apixy.api.v1.datasources import DataSourceUnion
 from apixy.config import SETTINGS
 from apixy.entities.project import Project, ProjectInput
 from apixy.models import DataSourceModel, ProjectModel
+
+from .datasources import DataSourceUnion
+from .shared import ApixyRouter
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ logger = logging.getLogger(__name__)
 PREFIX: Final[str] = "/projects"
 PROJECT_DATASOURCES_PREFIX: Final[str] = PREFIX + "/{project_id}/datasources"
 
-router = APIRouter(tags=["Projects"])
+router = ApixyRouter(tags=["Projects"])
 
 
 async def get_project_by_id(project_id: int) -> ProjectModel:
@@ -64,9 +66,7 @@ class ProjectsView:
             for p in await ProjectsDB.get_paginated_projects(limit, offset)
         ]
 
-    @router.post(
-        PREFIX + "/", status_code=status.HTTP_201_CREATED, response_class=Response
-    )
+    @router.post(PREFIX + "/")
     async def create(self, project_in: ProjectInput) -> Response:
         """Creating a new Project"""
         if await ProjectsDB.slug_exists(project_in.slug):
@@ -79,11 +79,7 @@ class ProjectsView:
             headers={"Location": self.get_project_link(project_id)},
         )
 
-    @router.put(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.put(PREFIX + "/{project_id}")
     async def update(
         self, project_id: int, project_in: ProjectInput
     ) -> Optional[Response]:
@@ -100,11 +96,7 @@ class ProjectsView:
         await model.update(**project_in.dict(exclude={"id"}))
         return None
 
-    @router.delete(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.delete(PREFIX + "/{project_id}")
     async def delete(self, project_id: int) -> Optional[Response]:
         """Deleting a Project"""
         queryset = ProjectsDB.project_for_update(project_id)
@@ -118,11 +110,7 @@ class ProjectsView:
 class ProjectsDataSourcesView:
     project: ProjectModel = Depends(get_project_by_id)
 
-    @router.put(
-        PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.put(PROJECT_DATASOURCES_PREFIX + "/{datasource_id}")
     async def add(self, datasource_id: int) -> None:
         """Adding an existing datasource to a project."""
         try:
@@ -146,11 +134,7 @@ class ProjectsDataSourcesView:
             DataSourceUnion.parse_obj(i.to_pydantic()) for i in list(project.sources)
         ]
 
-    @router.delete(
-        PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
+    @router.delete(PROJECT_DATASOURCES_PREFIX + "/{datasource_id}")
     async def remove(self, datasource_id: int) -> None:
         """Removing an existing datasource from a project."""
         datasource = [ds async for ds in self.project.sources if ds.id == datasource_id]
