@@ -1,5 +1,5 @@
 import logging
-from typing import Final, List, Optional, Union
+from typing import Dict, Final, List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fastapi_utils.cbv import cbv
@@ -9,12 +9,11 @@ from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 
-from apixy.config import SETTINGS
 from apixy.entities.project import Project, ProjectInput
 from apixy.models import DataSourceModel, ProjectModel
 
 from .datasources import DataSourceUnion
-from .shared import ApixyRouter
+from .shared import ApixyRouter, pagination_params
 
 logger = logging.getLogger(__name__)
 
@@ -58,12 +57,14 @@ class ProjectsView:
 
     @router.get(PREFIX + "/", response_model=List[Project])
     async def get_list(
-        self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
+        self, pagination: Dict[str, int] = Depends(pagination_params)
     ) -> List[Project]:
         """Endpoint for GET"""
         return [
             p.to_pydantic()
-            for p in await ProjectsDB.get_paginated_projects(limit, offset)
+            for p in await ProjectsDB.get_paginated_projects(
+                pagination["limit"], pagination["offset"]
+            )
         ]
 
     @router.post(PREFIX + "/")

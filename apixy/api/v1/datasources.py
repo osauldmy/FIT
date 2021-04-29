@@ -1,7 +1,7 @@
 import logging
-from typing import Final, List, Optional, Union
+from typing import Dict, Final, List, Optional, Union
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -10,7 +10,6 @@ from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 from tortoise.transactions import in_transaction
 
-from apixy.config import SETTINGS
 from apixy.entities.datasource import (
     DataSource,
     DataSourceInput,
@@ -21,7 +20,7 @@ from apixy.entities.datasource import (
 )
 from apixy.models import DataSourceModel
 
-from .shared import ApixyRouter
+from .shared import ApixyRouter, pagination_params
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +62,14 @@ class DataSourcesView:
         response_model=List[DataSourceUnion],
     )
     async def get_list(
-        self, limit: int = SETTINGS.DEFAULT_PAGINATION_LIMIT, offset: int = 0
+        self, pagination: Dict[str, int] = Depends(pagination_params)
     ) -> List[DataSourceUnion]:
         """Endpoint for GET"""
         return [
             DataSourceUnion.parse_obj(p.to_pydantic())
-            for p in await DataSourcesDB.get_paginated_datasources(limit, offset)
+            for p in await DataSourcesDB.get_paginated_datasources(
+                pagination["limit"], pagination["offset"]
+            )
         ]
 
     @router.post(PREFIX + "/")
