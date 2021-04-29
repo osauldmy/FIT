@@ -1,7 +1,7 @@
 import logging
 from typing import Final, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -23,6 +23,15 @@ PREFIX: Final[str] = "/projects"
 router = APIRouter(tags=["Projects"])
 
 
+async def get_project_by_id(project_id: int) -> models.Project:
+    try:
+        return await models.Project.get(id=project_id)
+    except DoesNotExist as exception:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "Invalid Project ID."
+        ) from exception
+
+
 @cbv(router)
 class Projects:
     """Provides CRUD for Projects"""
@@ -38,13 +47,11 @@ class Projects:
         return router.url_path_for("get", project_id=str(project_id))
 
     @router.get(PREFIX + "/{project_id}", response_model=Project)
-    async def get(self, project_id: int) -> Union[Project, Response]:
+    async def get(
+        self, project: models.Project = Depends(get_project_by_id)
+    ) -> Union[Project, Response]:
         """Endpoint for a single project."""
-        try:
-            queryset = await models.Project.get(id=project_id)
-            return queryset.to_pydantic()
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        return project.to_pydantic()
 
     @router.get(PREFIX + "/", response_model=List[Project])
     async def get_list(
@@ -113,65 +120,54 @@ class ProjectDataSources:
         status_code=status.HTTP_201_CREATED,
         response_class=Response,
     )
-    async def add(self, project_id: int, datasource_id: int) -> Response:
+    async def add(
+        self, datasource_id: int, project: models.Project = Depends(get_project_by_id)
+    ) -> Response:
         """Adding an existing datasource to a project."""
         try:
-            project = await models.Project.get(id=project_id)
             data_source = await models.DataSource.get(id=datasource_id)
-            if await project.sources.filter(Q(id=datasource_id)).exists():
-                raise HTTPException(
-                    status.HTTP_409_CONFLICT,
-                    "Datasource already exists in this project.",
-                )
-            await project.sources.add(data_source)
-            return Response(
-                status_code=status.HTTP_201_CREATED,
-                headers={
-                    "Location": Projects.get_project_link(project_id),
-                },
-            )
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        if data_source in await project.sources.all():
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "Datasource already exists in this project",
+            )
+        await project.sources.add(data_source)
+        return Response(
+            status_code=status.HTTP_201_CREATED,
+            headers={
+                "Location": Projects.get_project_link(project.id),
+            },
+        )
 
     @router.get(
         PREFIX + "/{project_id}/datasources", response_model=List[DataSourceUnion]
     )
-    async def list(self, project_id: int) -> List[DataSourceUnion]:
+    async def list(
+        self, project: models.Project = Depends(get_project_by_id)
+    ) -> List[DataSourceUnion]:
         """List all data sources tied to a project id."""
-        try:
-            project = await models.Project.get(id=project_id)
-            await project.fetch_related("sources")
-            return [
-                DataSourceUnion.parse_obj(i.to_pydantic())
-                for i in list(project.sources)
-            ]
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        await project.fetch_related("sources")
+        return [
+            DataSourceUnion.parse_obj(i.to_pydantic()) for i in list(project.sources)
+        ]
 
     @router.delete(
         PREFIX + "/{project_id}/datasources/{datasource_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
-    async def remove(self, project_id: int, datasource_id: int) -> Response:
+    async def remove(
+        self, datasource_id: int, project: models.Project = Depends(get_project_by_id)
+    ) -> None:
         """Removing an existing datasource from a project."""
-        try:
-            project = await models.Project.get(id=project_id)
-            data_source = await models.DataSource.get(id=datasource_id)
-            if not await project.sources.filter(Q(id=datasource_id)).exists():
-                raise HTTPException(
-                    status.HTTP_404_NOT_FOUND,
-                    "Datasource doesn't exist in this project.",
-                )
-            await project.sources.remove(data_source)
-            return Response(
-                status_code=status.HTTP_204_NO_CONTENT,
-                headers={
-                    "Location": Projects.get_project_link(project_id),
-                },
+        datasource = [ds async for ds in project.sources if ds.id == datasource_id]
+        if len(datasource) == 0:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, "No such datasource in this project"
             )
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        await project.sources.remove(datasource[0])
 
 
 class ProjectsDB:
