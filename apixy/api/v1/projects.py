@@ -116,25 +116,25 @@ class Projects:
 
 @cbv(router)
 class ProjectDataSources:
+    project: models.Project = Depends(get_project_by_id)
+
     @router.put(
         PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
-    async def add(
-        self, datasource_id: int, project: models.Project = Depends(get_project_by_id)
-    ) -> None:
+    async def add(self, datasource_id: int) -> None:
         """Adding an existing datasource to a project."""
         try:
             data_source = await models.DataSource.get(id=datasource_id)
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
-        if data_source in await project.sources.all():
+        if data_source in await self.project.sources.all():
             raise HTTPException(
                 status.HTTP_409_CONFLICT,
                 "Datasource already exists in this project",
             )
-        await project.sources.add(data_source)
+        await self.project.sources.add(data_source)
 
     @router.get(PROJECT_DATASOURCES_PREFIX, response_model=List[DataSourceUnion])
     async def list(
@@ -151,16 +151,14 @@ class ProjectDataSources:
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
-    async def remove(
-        self, datasource_id: int, project: models.Project = Depends(get_project_by_id)
-    ) -> None:
+    async def remove(self, datasource_id: int) -> None:
         """Removing an existing datasource from a project."""
-        datasource = [ds async for ds in project.sources if ds.id == datasource_id]
+        datasource = [ds async for ds in self.project.sources if ds.id == datasource_id]
         if len(datasource) == 0:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND, "No such datasource in this project"
             )
-        await project.sources.remove(datasource[0])
+        await self.project.sources.remove(datasource[0])
 
 
 class ProjectsDB:
