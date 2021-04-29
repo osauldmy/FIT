@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class Project(ForbidExtraModel):
+    """
+    A Project will be accessible via its slug.
+    Add DataSources to it to enable fetching via the proxy
+    """
+
     id: Optional[int]
     name: str = Field(max_length=64)
     slug: str = Field(max_length=64, regex="^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")
@@ -65,5 +70,9 @@ class ProjectWithDataSources(Project):
 
 
 class ProjectInput(Project):
+    """
+    An input class for creating and modifying Projects.
+    """
+
     class Config(OmitFieldsConfig, Project.Config):
         omit_fields = ("id",)
