@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
+from .datasource import DataSourceUnion
 from .shared import ForbidExtraModel, OmitFieldsConfig
 
 
@@ -15,6 +16,10 @@ class Project(ForbidExtraModel):
 
     class Config:
         orm_mode = True
+
+
+class ProjectWithDataSources(Project):
+    datasources: List[DataSourceUnion]
 
 
 class ProjectInput(Project):

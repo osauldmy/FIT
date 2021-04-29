@@ -8,7 +8,7 @@ import async_timeout
 import databases
 import jmespath
 import motor.motor_asyncio
-from pydantic import AnyUrl, Field, HttpUrl, validator
+from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
@@ -124,6 +124,10 @@ class MongoDBDataSourceInput(MongoDBDataSource):
 class SQLDataSourceInput(SQLDataSource):
     class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
+
+
+class DataSourceUnion(BaseModel):
+    __root__: Union[HTTPDataSource, MongoDBDataSource, SQLDataSource]
 
 
 DataSourceInput = Union[HTTPDataSourceInput, MongoDBDataSourceInput, SQLDataSourceInput]

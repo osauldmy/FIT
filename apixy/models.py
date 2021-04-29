@@ -10,6 +10,9 @@ from tortoise.models import Model
 from apixy.entities.datasource import DATA_SOURCES
 from apixy.entities.datasource import DataSource as DataSourceEntity
 from apixy.entities.project import Project as ProjectEntity
+from apixy.entities.project import (
+    ProjectWithDataSources as ProjectWithDataSourcesEntity,
+)
 
 Entity = TypeVar("Entity", bound=BaseModel)
 
@@ -39,6 +42,13 @@ class Project(ORMModel[ProjectEntity], Model):
 
     def to_pydantic(self) -> ProjectEntity:
         return ProjectEntity.from_orm(self)
+
+    async def to_pydantic_with_datasources(self) -> ProjectWithDataSourcesEntity:
+        project = ProjectEntity.from_orm(self)
+        return ProjectWithDataSourcesEntity(
+            **project.dict(),
+            datasources=[ds.to_pydantic() async for ds in self.sources.all()]
+        )
 
     @classmethod
     def from_pydantic(cls, entity: ProjectEntity) -> Project:

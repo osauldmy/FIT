@@ -24,11 +24,9 @@ async def fetch(
 ) -> List[DataSourceUnion]:
     """Fetches and aggregates all data sources tied to project slug."""
     try:
-        project = await models.Project.get(slug=project_slug)
-        await project.fetch_related("sources")
+        model = await models.Project.get(slug=project_slug)
+        project = await model.to_pydantic_with_datasources()
         # TODO: add fetching functionality
-        return [
-            DataSourceUnion.parse_obj(i.to_pydantic()) for i in list(project.sources)
-        ]
+        return project.datasources
     except DoesNotExist as err:
         raise HTTPException(status.HTTP_404_NOT_FOUND) from err

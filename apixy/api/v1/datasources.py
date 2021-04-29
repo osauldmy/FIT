@@ -3,7 +3,6 @@ from typing import Final, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException
 from fastapi_utils.cbv import cbv
-from pydantic import BaseModel
 from starlette import status
 from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
@@ -16,6 +15,7 @@ from apixy.config import SETTINGS
 from apixy.entities.datasource import (
     DataSource,
     DataSourceInput,
+    DataSourceUnion,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
@@ -28,10 +28,6 @@ logger = logging.getLogger(__name__)
 PREFIX: Final[str] = "/datasources"
 
 router = APIRouter(tags=["DataSources"])
-
-
-class DataSourceUnion(BaseModel):
-    __root__: Union[HTTPDataSource, MongoDBDataSource, SQLDataSource]
 
 
 @cbv(router)
