@@ -115,14 +115,14 @@ class Projects:
 
 @cbv(router)
 class ProjectDataSources:
-    @router.post(
+    @router.put(
         PREFIX + "/{project_id}/datasources/{datasource_id}",
-        status_code=status.HTTP_201_CREATED,
+        status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
     async def add(
         self, datasource_id: int, project: models.Project = Depends(get_project_by_id)
-    ) -> Response:
+    ) -> None:
         """Adding an existing datasource to a project."""
         try:
             data_source = await models.DataSource.get(id=datasource_id)
@@ -134,12 +134,6 @@ class ProjectDataSources:
                 "Datasource already exists in this project",
             )
         await project.sources.add(data_source)
-        return Response(
-            status_code=status.HTTP_201_CREATED,
-            headers={
-                "Location": Projects.get_project_link(project.id),
-            },
-        )
 
     @router.get(
         PREFIX + "/{project_id}/datasources", response_model=List[DataSourceUnion]
