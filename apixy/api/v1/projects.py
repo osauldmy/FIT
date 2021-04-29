@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # settings this as a constant instead of an argument for the APIRouter constructor
 # as that was duplicating the prefix (I suspect the @cbv decorator to be the cause)
 PREFIX: Final[str] = "/projects"
+PROJECT_DATASOURCES_PREFIX: Final[str] = PREFIX + "/{project_id}/datasources"
 
 router = APIRouter(tags=["Projects"])
 
@@ -116,7 +117,7 @@ class Projects:
 @cbv(router)
 class ProjectDataSources:
     @router.put(
-        PREFIX + "/{project_id}/datasources/{datasource_id}",
+        PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
@@ -135,9 +136,7 @@ class ProjectDataSources:
             )
         await project.sources.add(data_source)
 
-    @router.get(
-        PREFIX + "/{project_id}/datasources", response_model=List[DataSourceUnion]
-    )
+    @router.get(PROJECT_DATASOURCES_PREFIX, response_model=List[DataSourceUnion])
     async def list(
         self, project: models.Project = Depends(get_project_by_id)
     ) -> List[DataSourceUnion]:
@@ -148,7 +147,7 @@ class ProjectDataSources:
         ]
 
     @router.delete(
-        PREFIX + "/{project_id}/datasources/{datasource_id}",
+        PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
