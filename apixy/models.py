@@ -109,7 +109,6 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         self.data.update(entity_dict)
 
 
-# TODO possibility to make own Dict encoder or decoder for JSONField
 ProjectModel = Project
 DataSourceModel = DataSource
 
