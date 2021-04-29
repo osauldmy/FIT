@@ -249,7 +249,7 @@ class TestDataSourceDBModel:
             jsonpath="*",
             timeout=10,
         )
-        model = models.DataSource.from_pydantic(entity)
+        model = models.DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -269,7 +269,7 @@ class TestDataSourceDBModel:
             jsonpath="[*]",
             query={},
         )
-        model = models.DataSource.from_pydantic(entity)
+        model = models.DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -288,7 +288,7 @@ class TestDataSourceDBModel:
             timeout=10,
             query="SELECT * FROM table;",
         )
-        model = models.DataSource.from_pydantic(entity)
+        model = models.DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -299,7 +299,7 @@ class TestDataSourceDBModel:
 
     @staticmethod
     def test_apply_update() -> None:
-        model = models.DataSource(
+        model = models.DataSourceModel(
             url="https://apixy.com",
             jsonpath="*",
             timeout=10,

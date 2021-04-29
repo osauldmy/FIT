@@ -28,7 +28,7 @@ class ORMModel(Generic[Entity]):
         """Creates a tortoise model instance from a pydantic model."""
 
 
-class Project(ORMModel[ProjectEntity], Model):
+class ProjectModel(ORMModel[ProjectEntity], Model):
     """The DB entity for Project"""
 
     id = fields.IntField(pk=True)
@@ -37,8 +37,8 @@ class Project(ORMModel[ProjectEntity], Model):
     name = fields.CharField(64)
     merge_strategy = fields.CharField(32)
     description = fields.CharField(512, null=True)
-    sources: fields.ManyToManyRelation["DataSource"] = fields.ManyToManyField(
-        "models.DataSource", related_name="projects", through="projects_sources"
+    sources: fields.ManyToManyRelation["DataSourceModel"] = fields.ManyToManyField(
+        "models.DataSourceModel", related_name="projects", through="projects_sources"
     )
 
     def to_pydantic(self) -> ProjectEntity:
@@ -52,14 +52,14 @@ class Project(ORMModel[ProjectEntity], Model):
         )
 
     @classmethod
-    def from_pydantic(cls, entity: ProjectEntity) -> Project:
+    def from_pydantic(cls, entity: ProjectEntity) -> ProjectModel:
         return cls(**entity.dict())
 
 
-class DataSource(ORMModel[DataSourceEntity], Model):
+class DataSourceModel(ORMModel[DataSourceEntity], Model):
     """The DB entity for DataSource"""
 
-    projects: fields.ManyToManyRelation[Project]
+    projects: fields.ManyToManyRelation[ProjectModel]
     id = fields.IntField(pk=True)
     url = fields.CharField(max_length=1024)
     type = fields.CharField(max_length=32)
@@ -82,7 +82,7 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         )
 
     @classmethod
-    def from_pydantic(cls, entity: DataSourceEntity) -> DataSource:
+    def from_pydantic(cls, entity: DataSourceEntity) -> DataSourceModel:
         entity_dict = entity.dict(exclude={"id"})
         return cls(
             url=str(entity_dict.pop("url")),

@@ -20,7 +20,7 @@ async def fetch(
 ) -> ProxyResponse:
     """Fetches and aggregates all data sources tied to project slug."""
     try:
-        model = await models.Project.get(slug=project_slug)
+        model = await models.ProjectModel.get(slug=project_slug)
         project = await model.to_pydantic_with_datasources()
         return await project.fetch_data()
     except DoesNotExist as err:
