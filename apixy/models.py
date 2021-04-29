@@ -33,6 +33,9 @@ class Project(ORMModel[ProjectEntity], Model):
     slug = fields.CharField(128, unique=True)
     name = fields.CharField(64)
     description = fields.CharField(512, null=True)
+    sources: fields.ManyToManyRelation["DataSource"] = fields.ManyToManyField(
+        "models.DataSource", related_name="projects", through="projects_sources"
+    )
 
     def to_pydantic(self) -> ProjectEntity:
         return ProjectEntity.from_orm(self)
@@ -45,7 +48,7 @@ class Project(ORMModel[ProjectEntity], Model):
 class DataSource(ORMModel[DataSourceEntity], Model):
     """The DB entity for DataSource"""
 
-    # todo: add n:n decomposition
+    projects: fields.ManyToManyRelation[Project]
     id = fields.IntField(pk=True)
     url = fields.CharField(max_length=1024)
     type = fields.CharField(max_length=32)
