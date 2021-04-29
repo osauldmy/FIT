@@ -5,8 +5,8 @@ import aioresponses
 import pydantic
 import pytest
 
-from apixy import models
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
+from apixy.models import DataSourceModel
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
 
@@ -249,7 +249,7 @@ class TestDataSourceDBModel:
             jsonpath="*",
             timeout=10,
         )
-        model = models.DataSourceModel.from_pydantic(entity)
+        model = DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -269,7 +269,7 @@ class TestDataSourceDBModel:
             jsonpath="[*]",
             query={},
         )
-        model = models.DataSourceModel.from_pydantic(entity)
+        model = DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -288,7 +288,7 @@ class TestDataSourceDBModel:
             timeout=10,
             query="SELECT * FROM table;",
         )
-        model = models.DataSourceModel.from_pydantic(entity)
+        model = DataSourceModel.from_pydantic(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.jsonpath == entity.jsonpath
@@ -299,7 +299,7 @@ class TestDataSourceDBModel:
 
     @staticmethod
     def test_apply_update() -> None:
-        model = models.DataSourceModel(
+        model = DataSourceModel(
             url="https://apixy.com",
             jsonpath="*",
             timeout=10,

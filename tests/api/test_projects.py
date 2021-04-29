@@ -4,9 +4,10 @@ from unittest import mock
 from fastapi.testclient import TestClient
 from tortoise.exceptions import DoesNotExist
 
-from apixy import app, models
+from apixy import app
 from apixy.config import SETTINGS
 from apixy.entities.project import ProjectInput
+from apixy.models import ProjectModel
 
 client = TestClient(app.app)
 
@@ -18,7 +19,7 @@ def test_project_get(mocked_get: mock.AsyncMock) -> None:
     result_kwargs = dict(
         id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
     )
-    mocked_get.return_value = models.ProjectModel(**result_kwargs)
+    mocked_get.return_value = ProjectModel(**result_kwargs)
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}1")
     assert response.json() == result_kwargs
     assert response.status_code == 200
@@ -38,7 +39,7 @@ def test_project_get_list(mocked: mock.AsyncMock) -> None:
     result_kwargs = dict(
         id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
     )
-    mocked.return_value = [models.ProjectModel(**result_kwargs)]
+    mocked.return_value = [ProjectModel(**result_kwargs)]
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}")
     assert response.json() == [result_kwargs]
     assert response.status_code == 200
@@ -50,7 +51,7 @@ def test_project_get_list_pagination(mocked: mock.AsyncMock) -> None:
     result_kwargs = dict(
         id=1, slug="slug", name="name", description=None, merge_strategy="concatenation"
     )
-    mocked.return_value = [models.ProjectModel(**result_kwargs)]
+    mocked.return_value = [ProjectModel(**result_kwargs)]
     response = client.get(f"{PROJECT_ROUTER_BASE_URI}?offset=10&limit=20")
     assert response.json() == [result_kwargs]
     assert response.status_code == 200

@@ -5,7 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 from tortoise.exceptions import DoesNotExist
 
-from apixy import app, models
+from apixy import app
+from apixy.models import DataSourceModel
 
 client = TestClient(app.app)
 
@@ -20,7 +21,7 @@ def ds_kwargs() -> Dict[str, Any]:
 @mock.patch("apixy.models.DataSource.get")
 def test_datasource_get(mocked_get: mock.AsyncMock, ds_kwargs: Dict[str, Any]) -> None:
     data = {"method": "GET", "body": {}, "headers": {}}
-    mocked_get.return_value = models.DataSourceModel(**ds_kwargs, data=data)
+    mocked_get.return_value = DataSourceModel(**ds_kwargs, data=data)
     response = client.get(f"{DS_ROUTER_BASE_URI}1")
     ds_kwargs.update(data)
     assert response.json() == ds_kwargs
@@ -50,9 +51,9 @@ def test_datasources_get_list(
 ) -> None:
     data_http = {"method": "GET", "body": {}, "headers": {}}
     data_sql = {"query": "SELECT * FROM table;"}
-    ds_model_http = models.DataSourceModel(**ds_kwargs, data=data_http)
+    ds_model_http = DataSourceModel(**ds_kwargs, data=data_http)
     ds_kwargs["type"] = "sql"
-    ds_model_sql = models.DataSourceModel(**ds_kwargs, data=data_sql)
+    ds_model_sql = DataSourceModel(**ds_kwargs, data=data_sql)
     mocked.return_value = [ds_model_http, ds_model_sql]
     response = client.get(f"{DS_ROUTER_BASE_URI}")
     json = response.json()

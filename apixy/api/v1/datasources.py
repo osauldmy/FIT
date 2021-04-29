@@ -10,7 +10,6 @@ from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 from tortoise.transactions import in_transaction
 
-from apixy import models
 from apixy.config import SETTINGS
 from apixy.entities.datasource import (
     DataSource,
@@ -20,6 +19,7 @@ from apixy.entities.datasource import (
     MongoDBDataSource,
     SQLDataSource,
 )
+from apixy.models import DataSourceModel
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class DataSources:
     async def get(self, datasource_id: int) -> DataSourceUnion:
         """Endpoint for a single data source."""
         try:
-            queryset = await models.DataSourceModel.get(id=datasource_id)
+            queryset = await DataSourceModel.get(id=datasource_id)
             return DataSourceUnion.parse_obj(queryset.to_pydantic())
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
@@ -127,14 +127,12 @@ class DataSourcesDB:
         :param url: url to look for
         :param exclude_id: ID to exclude, if `None`, nothing will be excluded
         """
-        return await models.DataSourceModel.filter(
-            Q(url=url) & ~Q(id=exclude_id)
-        ).exists()
+        return await DataSourceModel.filter(Q(url=url) & ~Q(id=exclude_id)).exists()
 
     @staticmethod
     async def get_paginated_datasources(
         limit: int, offset: int
-    ) -> List[models.DataSourceModel]:
+    ) -> List[DataSourceModel]:
         """
         Fetch all data sources and apply limit-offset pagination.
 
@@ -142,7 +140,7 @@ class DataSourcesDB:
         :param offset: how many to skip
         :return: awaited queryset, so a list
         """
-        return await models.DataSourceModel.all().limit(limit).offset(offset)
+        return await DataSourceModel.all().limit(limit).offset(offset)
 
     @staticmethod
     async def save_datasource(datasource: DataSource) -> int:
@@ -153,7 +151,7 @@ class DataSourcesDB:
         :raise HTTPException: with status code 422
         :return: id of the record
         """
-        model = models.DataSourceModel.from_pydantic(datasource)
+        model = DataSourceModel.from_pydantic(datasource)
         try:
             await model.save()
             return model.id
@@ -162,11 +160,11 @@ class DataSourcesDB:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
     @staticmethod
-    def datasource_for_update(datasource_id: int) -> QuerySet[models.DataSourceModel]:
+    def datasource_for_update(datasource_id: int) -> QuerySet[DataSourceModel]:
         """
         Select a data source by id, locking the DB row for the rest of the transaction.
 
         :param datasource_id: id to look for
         :return: a queryset filtered by id
         """
-        return models.DataSourceModel.filter(id=datasource_id).select_for_update()
+        return DataSourceModel.filter(id=datasource_id).select_for_update()

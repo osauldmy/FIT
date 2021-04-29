@@ -9,10 +9,10 @@ from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 
-from apixy import models
 from apixy.api.v1.datasources import DataSourceUnion
 from apixy.config import SETTINGS
 from apixy.entities.project import Project, ProjectInput
+from apixy.models import DataSourceModel, ProjectModel
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,9 @@ PROJECT_DATASOURCES_PREFIX: Final[str] = PREFIX + "/{project_id}/datasources"
 router = APIRouter(tags=["Projects"])
 
 
-async def get_project_by_id(project_id: int) -> models.ProjectModel:
+async def get_project_by_id(project_id: int) -> ProjectModel:
     try:
-        return await models.ProjectModel.get(id=project_id)
+        return await ProjectModel.get(id=project_id)
     except DoesNotExist as exception:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, "Invalid Project ID."
@@ -49,7 +49,7 @@ class Projects:
 
     @router.get(PREFIX + "/{project_id}", response_model=Project)
     async def get(
-        self, project: models.ProjectModel = Depends(get_project_by_id)
+        self, project: ProjectModel = Depends(get_project_by_id)
     ) -> Union[Project, Response]:
         """Endpoint for a single project."""
         return project.to_pydantic()
@@ -116,7 +116,7 @@ class Projects:
 
 @cbv(router)
 class ProjectDataSources:
-    project: models.ProjectModel = Depends(get_project_by_id)
+    project: ProjectModel = Depends(get_project_by_id)
 
     @router.put(
         PROJECT_DATASOURCES_PREFIX + "/{datasource_id}",
@@ -126,7 +126,7 @@ class ProjectDataSources:
     async def add(self, datasource_id: int) -> None:
         """Adding an existing datasource to a project."""
         try:
-            data_source = await models.DataSourceModel.get(id=datasource_id)
+            data_source = await DataSourceModel.get(id=datasource_id)
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
         if data_source in await self.project.sources.all():
@@ -138,7 +138,7 @@ class ProjectDataSources:
 
     @router.get(PROJECT_DATASOURCES_PREFIX, response_model=List[DataSourceUnion])
     async def list(
-        self, project: models.ProjectModel = Depends(get_project_by_id)
+        self, project: ProjectModel = Depends(get_project_by_id)
     ) -> List[DataSourceUnion]:
         """List all data sources tied to a project id."""
         await project.fetch_related("sources")
@@ -170,14 +170,10 @@ class ProjectsDB:
         :param slug: slug to look for
         :param exclude_id: ID to exclude, if `None`, nothing will be excluded
         """
-        return await models.ProjectModel.filter(
-            Q(slug=slug) & ~Q(id=exclude_id)
-        ).exists()
+        return await ProjectModel.filter(Q(slug=slug) & ~Q(id=exclude_id)).exists()
 
     @staticmethod
-    async def get_paginated_projects(
-        limit: int, offset: int
-    ) -> List[models.ProjectModel]:
+    async def get_paginated_projects(limit: int, offset: int) -> List[ProjectModel]:
         """
         Fetch all projects and apply limit-offset pagination.
 
@@ -185,7 +181,7 @@ class ProjectsDB:
         :param offset: how many to skip
         :return: awaited queryset, so a list
         """
-        return await models.ProjectModel.all().limit(limit).offset(offset)
+        return await ProjectModel.all().limit(limit).offset(offset)
 
     @staticmethod
     async def save_project(project: Project) -> int:
@@ -196,7 +192,7 @@ class ProjectsDB:
         :raise HTTPException: with status code 422
         :return: id of the record
         """
-        model = models.ProjectModel(**project.dict(exclude_unset=True))
+        model = ProjectModel(**project.dict(exclude_unset=True))
         try:
             await model.save()
             return model.id
@@ -205,11 +201,11 @@ class ProjectsDB:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY) from err
 
     @staticmethod
-    def project_for_update(project_id: int) -> QuerySet[models.ProjectModel]:
+    def project_for_update(project_id: int) -> QuerySet[ProjectModel]:
         """
         Select a project by id, locking the DB row for the rest of the transaction.
 
         :param project_id: id to look for
         :return: a queryset filtered by id
         """
-        return models.ProjectModel.filter(id=project_id).select_for_update()
+        return ProjectModel.filter(id=project_id).select_for_update()

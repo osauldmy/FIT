@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 from starlette import status
 from tortoise.exceptions import DoesNotExist
 
-from apixy import models
+from apixy.models import ProjectModel
 from apixy.entities.proxy_response import ProxyResponse
 
 PREFIX_USER: Final[str] = "/collect"  # TODO: discuss possible prefixes
@@ -20,7 +20,7 @@ async def fetch(
 ) -> ProxyResponse:
     """Fetches and aggregates all data sources tied to project slug."""
     try:
-        model = await models.ProjectModel.get(slug=project_slug)
+        model = await ProjectModel.get(slug=project_slug)
         project = await model.to_pydantic_with_datasources()
         return await project.fetch_data()
     except DoesNotExist as err:

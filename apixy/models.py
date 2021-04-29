@@ -28,7 +28,7 @@ class ORMModel(Generic[Entity]):
         """Creates a tortoise model instance from a pydantic model."""
 
 
-class ProjectModel(ORMModel[ProjectEntity], Model):
+class Project(ORMModel[ProjectEntity], Model):
     """The DB entity for Project"""
 
     id = fields.IntField(pk=True)
@@ -38,7 +38,7 @@ class ProjectModel(ORMModel[ProjectEntity], Model):
     merge_strategy = fields.CharField(32)
     description = fields.CharField(512, null=True)
     sources: fields.ManyToManyRelation["DataSourceModel"] = fields.ManyToManyField(
-        "models.DataSourceModel", related_name="projects", through="projects_sources"
+        "models.DataSource", related_name="projects", through="projects_sources"
     )
 
     def to_pydantic(self) -> ProjectEntity:
@@ -56,7 +56,7 @@ class ProjectModel(ORMModel[ProjectEntity], Model):
         return cls(**entity.dict())
 
 
-class DataSourceModel(ORMModel[DataSourceEntity], Model):
+class DataSource(ORMModel[DataSourceEntity], Model):
     """The DB entity for DataSource"""
 
     projects: fields.ManyToManyRelation[ProjectModel]
@@ -110,3 +110,7 @@ class DataSourceModel(ORMModel[DataSourceEntity], Model):
 
 
 # TODO possibility to make own Dict encoder or decoder for JSONField
+ProjectModel = Project
+DataSourceModel = DataSource
+
+__all__ = ["ProjectModel", "DataSourceModel"]
