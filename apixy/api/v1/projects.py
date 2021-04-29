@@ -72,7 +72,7 @@ class Projects:
         )
 
     @router.post(
-        PREFIX + "/{project_id}/add/{datasource_id}",
+        PREFIX + "/{project_id}/datasources/{datasource_id}",
         status_code=status.HTTP_201_CREATED,
         response_class=Response,
     )
@@ -81,10 +81,10 @@ class Projects:
         try:
             project = await models.Project.get(id=project_id)
             data_source = await models.DataSource.get(id=datasource_id)
-            if project.sources.filter(Q(id=datasource_id)).exists():
+            if await project.sources.filter(Q(id=datasource_id)).exists():
                 raise HTTPException(
                     status.HTTP_409_CONFLICT,
-                    "Datasource already exists in this project",
+                    "Datasource already exists in this project.",
                 )
             await project.sources.add(data_source)
             return Response(
@@ -112,7 +112,7 @@ class Projects:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
     @router.delete(
-        PREFIX + "/{project_id}/remove",
+        PREFIX + "/{project_id}/datasources/{datasource_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         response_class=Response,
     )
@@ -121,6 +121,11 @@ class Projects:
         try:
             project = await models.Project.get(id=project_id)
             data_source = await models.DataSource.get(id=datasource_id)
+            if not await project.sources.filter(Q(id=datasource_id)).exists():
+                raise HTTPException(
+                    status.HTTP_404_NOT_FOUND,
+                    "Datasource doesn't exist in this project.",
+                )
             await project.sources.remove(data_source)
             return Response(
                 status_code=status.HTTP_204_NO_CONTENT,
