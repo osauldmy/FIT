@@ -71,6 +71,43 @@ class Projects:
             headers={"Location": self.get_project_link(project_id)},
         )
 
+    @router.put(
+        PREFIX + "/{project_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        response_class=Response,
+    )
+    async def update(
+        self, project_id: int, project_in: ProjectInput
+    ) -> Optional[Response]:
+        """Updating an existing Project"""
+        if await ProjectsDB.slug_exists(project_in.slug, project_id):
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, "Project with this slug already exists."
+            )
+        model = ProjectsDB.project_for_update(project_id)
+        if not await model.exists():
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
+            )
+        await model.update(**project_in.dict(exclude={"id"}))
+        return None
+
+    @router.delete(
+        PREFIX + "/{project_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        response_class=Response,
+    )
+    async def delete(self, project_id: int) -> Optional[Response]:
+        """Deleting a Project"""
+        queryset = ProjectsDB.project_for_update(project_id)
+        if not await queryset.exists():
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        await queryset.delete()
+        return None
+
+
+@cbv(router)
+class ProjectDataSources:
     @router.post(
         PREFIX + "/{project_id}/datasources/{datasource_id}",
         status_code=status.HTTP_201_CREATED,
@@ -90,7 +127,7 @@ class Projects:
             return Response(
                 status_code=status.HTTP_201_CREATED,
                 headers={
-                    "Location": self.get_project_link(project_id),
+                    "Location": Projects.get_project_link(project_id),
                 },
             )
         except DoesNotExist as err:
@@ -130,45 +167,11 @@ class Projects:
             return Response(
                 status_code=status.HTTP_204_NO_CONTENT,
                 headers={
-                    "Location": self.get_project_link(project_id),
+                    "Location": Projects.get_project_link(project_id),
                 },
             )
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
-
-    @router.put(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
-    async def update(
-        self, project_id: int, project_in: ProjectInput
-    ) -> Optional[Response]:
-        """Updating an existing Project"""
-        if await ProjectsDB.slug_exists(project_in.slug, project_id):
-            raise HTTPException(
-                status.HTTP_409_CONFLICT, "Project with this slug already exists."
-            )
-        model = ProjectsDB.project_for_update(project_id)
-        if not await model.exists():
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND, "Project with this ID does not exist."
-            )
-        await model.update(**project_in.dict(exclude={"id"}))
-        return None
-
-    @router.delete(
-        PREFIX + "/{project_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
-        response_class=Response,
-    )
-    async def delete(self, project_id: int) -> Optional[Response]:
-        """Deleting a Project"""
-        queryset = ProjectsDB.project_for_update(project_id)
-        if not await queryset.exists():
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
-        await queryset.delete()
-        return None
 
 
 class ProjectsDB:
