@@ -148,8 +148,8 @@ class TestHTTPDataSource:
         fetched_payload: List[Any],
     ) -> None:
         http_datasource = HTTPDataSource(**raw_datasource)
-        with aioresponses.aioresponses() as mock:
-            mock.add(
+        with aioresponses.aioresponses() as cursor_mock:
+            cursor_mock.add(
                 url=http_datasource.url,
                 method=http_datasource.method,
                 status=200,
@@ -179,7 +179,7 @@ class TestMongoDBDataSource:
             },
         ),
     )
-    def test_invalid_mongodbdatasource(raw_datasource: Mapping[str, Any]) -> None:
+    def test_invalid_mongodb_datasource(raw_datasource: Mapping[str, Any]) -> None:
         with pytest.raises(pydantic.ValidationError):
             MongoDBDataSource(**raw_datasource)
 
@@ -215,15 +215,66 @@ class TestMongoDBDataSource:
 
     @staticmethod
     @pytest.mark.asyncio
-    async def test_mongodb_datasource_mock_fetch_success() -> None:
-        mongodb_datasource = MongoDBDataSource(
-            url="mongodb://some.url",
-            database="foo",
-            collection="bar",
-            jsonpath="[*]",
-            query={},
-        )
-        payload = [{"foo": "bar"}, {"bar": "baz"}]
+    @pytest.mark.parametrize(
+        "raw_datasource, payload, fetched_payload",
+        [
+            (
+                {
+                    "url": "mongodb://some.url",
+                    "database": "foo",
+                    "collection": "bar",
+                    "jsonpath": "[*]",
+                    "query": {},
+                },
+                [{"foo": "bar"}, {"bar": "baz"}],
+                [{"foo": "bar"}, {"bar": "baz"}],
+            ),
+            (
+                {
+                    "url": "mongodb://some.url",
+                    "database": "foo",
+                    "collection": "bar",
+                    "jsonpath": "[*]",
+                    "query": {},
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                PAYLOAD_SPACEX_ROCKETS,
+            ),
+            (
+                {
+                    "url": "mongodb://some.url",
+                    "database": "foo",
+                    "collection": "bar",
+                    "jsonpath": "[*].name",
+                    "query": {"a": "abc"},
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                ["Falcon 1", "Falcon 9", "Falcon Heavy", "Starship"],
+            ),
+            (
+                {
+                    "url": "mongodb://some.url",
+                    "database": "foo",
+                    "collection": "bar",
+                    "jsonpath": "[*].[name,success_rate_pct]",
+                    "query": {},
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                [
+                    ["Falcon 1", 40],
+                    ["Falcon 9", 98],
+                    ["Falcon Heavy", 100],
+                    ["Starship", 0],
+                ],
+            ),
+        ],
+    )
+    async def test_mongodb_datasource_mock_fetch_success(
+        raw_datasource: Mapping[str, Any],
+        payload: List[Any],
+        fetched_payload: List[Any],
+    ) -> None:
+        mongodb_datasource = MongoDBDataSource(**raw_datasource)
 
         with mock.patch(
             "motor.motor_asyncio.AsyncIOMotorCollection.find"
@@ -235,7 +286,168 @@ class TestMongoDBDataSource:
             cursor_mock.return_value.to_list.assert_awaited_once()
             cursor_mock.return_value.close.assert_awaited_once()
 
-        assert data == payload
+        assert data == fetched_payload
+
+
+class TestSQLDBDataSource:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "raw_datasource",
+        (
+            dict(),  # invalid1
+            {"foo": "bar"},  # invalid2
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+            },  # HTTP, not SQL
+            {
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "database": "foo",
+                "collection": "bar",
+            },  # invalid mongo
+            {
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "jsonpath": "*",
+                "database": "foo",
+                "collection": "bar",
+                "query": {},
+            },  # mongo not SQL
+            {
+                "url": "postgresql://other@localhost",
+            },  # only address
+            {
+                "url": "postgresql://other@localhost",
+                "timeout": "twenty",
+                "jsonpath": "[*]",
+                "query": "SELECT * FROM books",
+            },  # incorrect timeout type
+            {
+                "url": "postgresql://other@localhost",
+                "timeout": 20,
+                "jsonpath": "choose everything",
+                "query": "SELECT * FROM books",
+            },  # incorrect jsonpath format
+            {
+                "url": "postgresql://other@localhost",
+                "timeout": 20,
+                "jsonpath": "[*]",
+            },  # missing query
+            # {
+            #     "url": "postgresql://other@localhost",
+            #     "timeout": 20,
+            #     "jsonpath": "[*]",
+            #     "query": "DROP TABLE IF EXISTS books",
+            # },  # forbidden query
+            # {
+            #     "url": "postgresql://other@localhost",
+            #     "timeout": 20,
+            #     "jsonpath": "[*]",
+            #     "query": "SELECT 'DROP TABLE ' + '[' + TABLE_SCHEMA + ']\
+            #               .[' + TABLE_NAME + ']'\ "
+            #              "FROM INFORMATION_SCHEMA.TABLES\ "
+            #              "ORDER BY TABLE_SCHEMA, TABLE_NAME",
+            # },  # forbidden query
+        ),
+    )
+    def test_invalid_sql_datasource(raw_datasource: Mapping[str, Any]) -> None:
+        with pytest.raises(pydantic.ValidationError):
+            SQLDataSource(**raw_datasource)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "raw_datasource",
+        (
+            {
+                "url": "postgresql://other@localhost",
+                "timeout": 20,
+                "jsonpath": "[*]",
+                "query": "",
+            },
+            {
+                "url": "postgresql://other@localhost:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books",
+            },
+            {
+                "url": "mysql://repos.insttech.washington.edu",
+                "timeout": 20,
+                "jsonpath": "[*]",
+                "query": "SELECT * FROM books",
+            },
+        ),
+    )
+    def test_valid_sql_datasource(raw_datasource: Mapping[str, Any]) -> None:
+        SQLDataSource(**raw_datasource)
+
+    @staticmethod
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "raw_datasource, payload, fetched_payload",
+        [
+            (
+                {
+                    "url": "postgresql://other@localhost:5000",
+                    "timeout": 20,
+                    "jsonpath": "[*]",
+                    "query": "SELECT * FROM books",
+                },
+                [{"foo": "bar"}, {"bar": "baz"}],
+                [{"foo": "bar"}, {"bar": "baz"}],
+            ),
+            (
+                {
+                    "url": "postgresql://other@localhost:5000",
+                    "timeout": 20,
+                    "jsonpath": "[*]",
+                    "query": "SELECT * FROM books",
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                PAYLOAD_SPACEX_ROCKETS,
+            ),
+            (
+                {
+                    "url": "postgresql://other@localhost:5000",
+                    "timeout": 20,
+                    "jsonpath": "[*].name",
+                    "query": "SELECT * FROM books",
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                ["Falcon 1", "Falcon 9", "Falcon Heavy", "Starship"],
+            ),
+            (
+                {
+                    "url": "postgresql://other@localhost:5000",
+                    "timeout": 20,
+                    "jsonpath": "[*].[name,success_rate_pct]",
+                    "query": "SELECT * FROM books",
+                },
+                PAYLOAD_SPACEX_ROCKETS,
+                [
+                    ["Falcon 1", 40],
+                    ["Falcon 9", 98],
+                    ["Falcon Heavy", 100],
+                    ["Starship", 0],
+                ],
+            ),
+        ],
+    )
+    async def test_sql_datasource_mock_fetch_success(
+        raw_datasource: Mapping[str, Any],
+        payload: List[Any],
+        fetched_payload: List[Any],
+    ) -> None:
+        sql_datasource = SQLDataSource(**raw_datasource)
+
+        with mock.patch("databases.Database", spec_set=True) as cursor_mock:
+            instance = cursor_mock.return_value.__aenter__.return_value
+            instance.fetch_all = mock.AsyncMock(return_value=payload)
+
+            data = await sql_datasource.fetch_data()
+
+            instance.fetch_all.assert_awaited_once_with(query=sql_datasource.query)
+            assert data == fetched_payload
 
 
 class TestDataSourceDBModel:
