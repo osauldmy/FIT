@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import traceback
 from typing import List, Optional, Union
 
 from pydantic import Field
@@ -9,6 +8,8 @@ from .datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
 from .merge_strategy import MERGE_STRATEGY_MAPPING
 from .proxy_response import ProxyResponse
 from .shared import ForbidExtraModel, OmitFieldsConfig
+
+logger = logging.getLogger(__name__)
 
 
 class Project(ForbidExtraModel):
@@ -27,31 +28,17 @@ class Project(ForbidExtraModel):
 class ProjectWithDataSources(Project):
     datasources: List[Union[HTTPDataSource, MongoDBDataSource, SQLDataSource]]
 
-    async def fetch_data(
-        self, include_exceptions: bool = True, include_tracebacks: bool = False
-    ) -> ProxyResponse:
+    async def fetch_data(self) -> ProxyResponse:
 
         fetched, errors = [], []
 
         for datasource in self.datasources:
             try:
                 fetched.append(await datasource.fetch_data())
-            except Exception as exception:  # pylint: disable=broad-except
-                logging.getLogger(__name__).exception(exception)
-
-                if include_tracebacks:
-                    error_message = traceback.format_exc()
-                elif include_exceptions:
-                    error_message = str(exception)
-                else:
-                    error_message = "Error happened!"
-
-                # not the best fix, but at least it works
-                if error_message == "" and isinstance(exception, asyncio.TimeoutError):
-                    error_message = "Timeout!"
-
+            except asyncio.TimeoutError as error:
+                logger.exception(error)
                 # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
-                errors.append({datasource.url: error_message})
+                errors.append({datasource.url: "Timeout!"})
 
         merged = MERGE_STRATEGY_MAPPING[self.merge_strategy].apply(fetched)
         return ProxyResponse(
