@@ -56,7 +56,7 @@ class ProjectWithDataSources(Project):
         merged = MERGE_STRATEGY_MAPPING[self.merge_strategy].apply(fetched)
         return ProxyResponse(
             result={
-                "size": len(fetched),
+                "size": len(merged),
                 "data": merged,
             },
             errors={"size": len(errors), "data": errors},
