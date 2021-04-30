@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from abc import abstractmethod
 from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type, Union
 
@@ -12,6 +13,15 @@ from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
+logger = logging.getLogger(__name__)
+
+
+class DataSourceFetchError(Exception):
+    """
+    Unified exception for datasource fetch method to raise in case of fetching failure.
+    To be caught by Project.fetch_data()
+    """
+
 
 class DataSource(ForbidExtraModel):
     """
@@ -20,8 +30,6 @@ class DataSource(ForbidExtraModel):
     :param url: URI (http(s), database etc)
     :param jsonpath: JMESPath (https://jmespath.org/) query string
     :param timeout: a float timeout value (in seconds)
-
-    :raises asyncio.exceptions.TimeoutError: on timeout
     """
 
     class Config:
@@ -45,7 +53,13 @@ class DataSource(ForbidExtraModel):
 
     @abstractmethod
     async def fetch_data(self) -> Any:
-        """Fetches data as defined by the instance's attributes"""
+        """
+        Fetches data as defined by the instance's attributes
+
+        :raises asyncio.exceptions.TimeoutError: on timeout
+        :raises DataSourceFetchError: on inability to fetch data or some another
+                                      fetch-related problem
+        """
 
 
 class HTTPDataSource(DataSource):
@@ -59,14 +73,18 @@ class HTTPDataSource(DataSource):
 
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
-            async with aiohttp.ClientSession() as session:
-                async with session.request(
-                    method=self.method,
-                    url=self.url,
-                    json=self.body,
-                    headers=self.headers,
-                ) as response:
-                    data = await response.json()
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.request(
+                        method=self.method,
+                        url=self.url,
+                        json=self.body,
+                        headers=self.headers,
+                    ) as response:
+                        data = await response.json()
+            except aiohttp.ClientError as error:
+                logger.exception(error)
+                raise DataSourceFetchError from error
 
         return jmespath.compile(self.jsonpath).search(data)
 
@@ -81,14 +99,14 @@ class MongoDBDataSource(DataSource):
 
     async def fetch_data(self) -> Any:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
-        try:
-            async with async_timeout.timeout(self.timeout):
-                cursor = client[self.database][self.collection].find(
-                    self.query, {"_id": False}
-                )
+        async with async_timeout.timeout(self.timeout):
+            cursor = client[self.database][self.collection].find(
+                self.query, {"_id": False}
+            )
+            try:
                 data = await cursor.to_list(None)
-        finally:
-            await cursor.close()
+            finally:
+                await cursor.close()
 
         return jmespath.compile(self.jsonpath).search(data)
 
@@ -103,8 +121,12 @@ class SQLDataSource(DataSource):
 
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
-            async with databases.Database(self.url) as database:
-                rows = await database.fetch_all(query=self.query)
+            try:
+                async with databases.Database(self.url) as database:
+                    rows = await database.fetch_all(query=self.query)
+            except RuntimeError as error:
+                logger.exception(error)
+                raise DataSourceFetchError from error
 
         return jmespath.compile(self.jsonpath).search([dict(row) for row in rows])
 

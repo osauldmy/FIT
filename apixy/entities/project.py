@@ -4,7 +4,12 @@ from typing import List, Optional, Union
 
 from pydantic import Field
 
-from .datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
+from .datasource import (
+    DataSourceFetchError,
+    HTTPDataSource,
+    MongoDBDataSource,
+    SQLDataSource,
+)
 from .merge_strategy import MERGE_STRATEGY_MAPPING
 from .proxy_response import ProxyResponse
 from .shared import ForbidExtraModel, OmitFieldsConfig
@@ -35,10 +40,12 @@ class ProjectWithDataSources(Project):
         for datasource in self.datasources:
             try:
                 fetched.append(await datasource.fetch_data())
+            # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
             except asyncio.TimeoutError as error:
                 logger.exception(error)
-                # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
                 errors.append({datasource.url: "Timeout!"})
+            except DataSourceFetchError:
+                errors.append({datasource.url: "Fetch error!"})
 
         merged = MERGE_STRATEGY_MAPPING[self.merge_strategy].apply(fetched)
         return ProxyResponse(
