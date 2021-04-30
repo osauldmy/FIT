@@ -4,8 +4,8 @@ from fastapi import HTTPException, Query
 from starlette import status
 from tortoise.exceptions import DoesNotExist
 
-from apixy.models import ProjectModel
 from apixy.entities.proxy_response import ProxyResponse
+from apixy.models import ProjectModel
 
 from .shared import ApixyRouter
 
