@@ -19,7 +19,7 @@ class ProxyResponse(ForbidExtraModel):
         """
 
         size: int = Field(0, ge=0)
-        data: Any = []
+        data: Any = Field(..., default_factory=list)
 
     result: Container
     errors: Optional[Container]
