@@ -148,8 +148,8 @@ class TestHTTPDataSource:
         fetched_payload: List[Any],
     ) -> None:
         http_datasource = HTTPDataSource(**raw_datasource)
-        with aioresponses.aioresponses() as cursor_mock:
-            cursor_mock.add(
+        with aioresponses.aioresponses() as http_mock:
+            http_mock.add(
                 url=http_datasource.url,
                 method=http_datasource.method,
                 status=200,
