@@ -37,15 +37,22 @@ class ProjectWithDataSources(Project):
 
         fetched, errors = [], []
 
-        for datasource in self.datasources:
-            try:
-                fetched.append(await datasource.fetch_data())
-            # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
-            except asyncio.TimeoutError as error:
-                logger.exception(error)
-                errors.append({datasource.url: "Timeout!"})
-            except DataSourceFetchError:
-                errors.append({datasource.url: "Fetch error!"})
+        gathered = await asyncio.gather(
+            *(datasource.fetch_data() for datasource in self.datasources),
+            return_exceptions=True
+        )
+
+        for index, result in enumerate(gathered):
+            if not isinstance(result, Exception):
+                fetched.append(result)
+            else:
+                logger.exception(result)
+
+                # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
+                if isinstance(result, asyncio.TimeoutError):
+                    errors.append({self.datasources[index].url: "Timeout!"})
+                elif isinstance(result, DataSourceFetchError):
+                    errors.append({self.datasources[index].url: "Fetch error!"})
 
         merged = MERGE_STRATEGY_MAPPING[self.merge_strategy].apply(fetched)
         return ProxyResponse(
