@@ -52,7 +52,11 @@ test_integration:
   stage: test
   script:
     - pip install docker-compose
-    - docker-compose up
+    - |
+      docker-compose
+      -f docker-compose.yml
+      -f tests/integration/docker-compose.override.yml
+      up
     - pip install -r requirements-test.txt
     - python -m pytest -v $TEST_DIR/api
 
