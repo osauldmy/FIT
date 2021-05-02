@@ -50,18 +50,16 @@ test_api:
 
 test_integration:
   stage: test
+  image: docker/compose:alpine-1.29.1
   services:
     - docker:20-dind
   script:
     - cp .env.testing .env
-    - pip install docker-compose
     - >
       docker-compose
       -f docker-compose.yml
       -f tests/integration/docker-compose.override.yml
       up
-    - pip install -r requirements-test.txt
-    - python -m pytest -v $TEST_DIR/api
 
 sphinx:
   stage: docs

@@ -5,4 +5,6 @@ services:
     command: []
   db:
     volumes: []
+  tests:
+    build: ./tests/integration
 volumes: {}
