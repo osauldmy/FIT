@@ -31,7 +31,8 @@ services:
       - apixy_db:/var/lib/postgresql
     healthcheck:
       test: "pg_isready --user $POSTGRES_USER"
-      timeout: 5s
+      interval: 2s
+      timeout: 2s
       retries: 20
 
   migrate:
