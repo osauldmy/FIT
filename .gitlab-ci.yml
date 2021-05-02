@@ -86,7 +86,7 @@ docker_build:
   script:
     - docker build -t $IMAGE .
     - mkdir image
-    - docker save app > image/$IMAGE.tar
+    - docker save $IMAGE > image/$IMAGE.tar
   artifacts:
     paths:
       - image
