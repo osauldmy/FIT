@@ -20,10 +20,12 @@ def ds_kwargs() -> Dict[str, Any]:
 
 @mock.patch("apixy.models.DataSource.get")
 def test_datasource_get(mocked_get: mock.AsyncMock, ds_kwargs: Dict[str, Any]) -> None:
-    data = {"method": "GET", "body": {}, "headers": {}}
+    data = {"method": "GET"}
     mocked_get.return_value = DataSourceModel(**ds_kwargs, data=data)
     response = client.get(f"{DS_ROUTER_BASE_URI}1")
     ds_kwargs.update(data)
+    ds_kwargs["body"] = None
+    ds_kwargs["headers"] = None
     assert response.json() == ds_kwargs
     assert response.status_code == 200
     mocked_get.assert_called_once_with(id=1)
@@ -49,7 +51,7 @@ def test_datasources_get_list_empty(mocked: mock.AsyncMock) -> None:
 def test_datasources_get_list(
     mocked: mock.AsyncMock, ds_kwargs: Dict[str, Any]
 ) -> None:
-    data_http = {"method": "GET", "body": {}, "headers": {}}
+    data_http = {"method": "GET"}
     data_sql = {"query": "SELECT * FROM table;"}
     ds_model_http = DataSourceModel(**ds_kwargs, data=data_http)
     ds_kwargs["type"] = "sql"
