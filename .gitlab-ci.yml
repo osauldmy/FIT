@@ -53,6 +53,8 @@ test_integration:
   image: docker/compose:alpine-1.29.1
   services:
     - docker:20-dind
+  before_script: []
+  cache: {}
   script:
     - cp .env.testing .env
     - >
