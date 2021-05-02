@@ -5,6 +5,9 @@ services:
     image: apixy-be
     build: {}
     command: []
+  migrate:
+    image: apixy-be
+    build: {}
   db:
     volumes: []
   tests:
