@@ -50,6 +50,8 @@ test_api:
 
 test_integration:
   stage: test
+  services:
+    - docker:20-dind
   script:
     - cp .env.testing .env
     - pip install docker-compose
