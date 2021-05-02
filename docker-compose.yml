@@ -18,6 +18,8 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+      migrate:
+        condition: service_started
     command: [
       "sh",
       "-c",

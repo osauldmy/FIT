@@ -7,4 +7,6 @@ services:
     volumes: []
   tests:
     build: ./tests/integration
+    depends_on:
+      - api
 volumes: {}

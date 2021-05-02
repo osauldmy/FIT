@@ -61,7 +61,12 @@ test_integration:
       docker-compose
       -f docker-compose.yml
       -f tests/integration/docker-compose.override.yml
-      up
+      up -d api
+    - >
+      docker-compose
+      -f docker-compose.yml
+      -f tests/integration/docker-compose.override.yml
+      up tests
 
 sphinx:
   stage: docs
