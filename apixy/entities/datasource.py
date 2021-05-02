@@ -13,6 +13,8 @@ from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
+from .validators import validate_nonzero_length
+
 logger = logging.getLogger(__name__)
 
 
@@ -70,6 +72,10 @@ class HTTPDataSource(DataSource):
     body: Optional[Dict[str, Any]] = None
     headers: Optional[Dict[str, Any]] = None
     type: Annotated[str, Field(regex="http")] = "http"
+
+    _body_headers_not_empty = validator("body", "headers", allow_reuse=True)(
+        validate_nonzero_length
+    )
 
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
