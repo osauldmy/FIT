@@ -22,11 +22,6 @@ class TestProjectCRUD:
     def create_project(self, project_json: Dict[str, str]) -> requests.Response:
         return requests.post(f"{API_URL}/projects", json=project_json)
 
-    def test_get_all(self) -> None:
-        r = requests.get(f"{API_URL}/projects")
-        assert r.status_code == 200
-        assert isinstance(r.json(), list)
-
     @pytest.mark.dependency(name="post")
     def test_post(self, create_project: requests.Response) -> None:
         assert create_project.status_code == 201
@@ -62,3 +57,24 @@ class TestProjectCRUD:
         assert r.status_code == 204
         r_check = requests.get(f"{API_URL}{link}")
         assert r_check.status_code == 404
+
+    @pytest.mark.dependency(depends=["post"])
+    def test_get_all(self) -> None:
+        r = requests.get(f"{API_URL}/projects")
+        assert r.status_code == 200
+        r_json = r.json()
+        assert isinstance(r_json, list)
+        count_before = len(r_json)
+        for x in range(5):
+            body = {
+                "name": f"New project {x}",
+                "slug": str(uuid.uuid4()),
+                "merge_strategy": "concatenation",
+                "description": f"This is a description but modified {x}",
+            }
+            assert requests.post(f"{API_URL}/projects", json=body).status_code == 201
+        r = requests.get(f"{API_URL}/projects")
+        assert r.status_code == 200
+        r_json = r.json()
+        assert isinstance(r_json, list)
+        assert len(r_json) - count_before == 5
