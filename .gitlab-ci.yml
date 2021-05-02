@@ -48,6 +48,14 @@ test_api:
     - pip install -r requirements.txt -r requirements-test.txt
     - python -m pytest -v $TEST_DIR/api
 
+test_integration:
+  stage: test
+  script:
+    - pip install docker-compose
+    - docker-compose up
+    - pip install -r requirements-test.txt
+    - python -m pytest -v $TEST_DIR/api
+
 sphinx:
   stage: docs
   script:
