@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from pydantic.error_wrappers import ValidationError
 
-from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
+from apixy.entities.datasource import DATA_SOURCES
 from apixy.entities.project import Project, ProjectWithDataSources
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
@@ -51,56 +51,49 @@ def test_invalid_merge_strategy(sample_project_data: Dict[str, Any]) -> None:
         Project(**sample_project_data)
 
 
-datasource_name_to_class = {
-    "HTTPDataSource": HTTPDataSource,
-    "MongoDBDataSource": MongoDBDataSource,
-    "SQLDataSource": SQLDataSource,
-}
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "data_sources_with_payloads",
     [
         (
             (
-                "HTTPDataSource",
+                "http",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
         ),
         (
             (
-                "MongoDBDataSource",
+                "mongo",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
         ),
         (
             (
-                "SQLDataSource",
+                "sql",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
         ),
         (
             (
-                "HTTPDataSource",
+                "http",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
             (
-                "HTTPDataSource",
+                "http",
                 ["Falcon 1", "Falcon 9", "Falcon Heavy", "Starship"],
             ),
         ),
         (
             (
-                "HTTPDataSource",
+                "http",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
             (
-                "HTTPDataSource",
+                "http",
                 [{"foo2": "bar2"}, {"bar2": "baz2"}],
             ),
             (
-                "SQLDataSource",
+                "sql",
                 [
                     ["Falcon 1", 40],
                     ["Falcon 9", 98],
@@ -111,15 +104,15 @@ datasource_name_to_class = {
         ),
         (
             (
-                "HTTPDataSource",
+                "http",
                 [{"foo": "bar"}, {"bar": "baz"}],
             ),
             (
-                "HTTPDataSource",
+                "http",
                 PAYLOAD_SPACEX_ROCKETS,
             ),
             (
-                "SQLDataSource",
+                "sql",
                 [{"foo3": "bar3"}, {"bar3": "baz3"}],
             ),
         ),
@@ -132,10 +125,10 @@ async def test_project_fetch_data_concatenation(
     fetched_payloads = []
 
     for data_source_class_name, payload in data_sources_with_payloads:
-        data_source_class = datasource_name_to_class[data_source_class_name]
+        data_source_class = DATA_SOURCES[data_source_class_name]
 
         with mock.patch(
-            "apixy.entities.datasource." + data_source_class_name,
+            "apixy.entities.datasource." + data_source_class.schema()["title"],
             spec=data_source_class,
             spec_set=True,
         ) as mock_data_source:
