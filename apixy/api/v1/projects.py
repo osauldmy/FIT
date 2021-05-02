@@ -12,6 +12,7 @@ from tortoise.queryset import QuerySet
 from apixy.entities.project import Project, ProjectInput
 from apixy.models import DataSourceModel, ProjectModel
 
+from ...entities.proxy_response import ProxyResponse
 from .datasources import DataSourceUnion
 from .shared import ApixyRouter, pagination_params
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 # as that was duplicating the prefix (I suspect the @cbv decorator to be the cause)
 PREFIX: Final[str] = "/projects"
 PROJECT_DATASOURCES_PREFIX: Final[str] = PREFIX + "/{project_id}/datasources"
+PROJECT_ID_FETCH_PREFIX: Final[str] = PREFIX + "/{project_id}/fetch"
 
 router = ApixyRouter(tags=["Projects"])
 
@@ -102,6 +104,16 @@ class ProjectsView:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         await queryset.delete()
         return None
+
+    @router.get(PROJECT_ID_FETCH_PREFIX, response_model=ProxyResponse)
+    async def fetch(self, project_id: int) -> ProxyResponse:
+        """Fetches and aggregates all data sources tied to project id."""
+        try:
+            model = await ProjectModel.get(id=project_id)
+            project = await model.to_pydantic_with_datasources()
+            return await project.fetch_data()
+        except DoesNotExist as err:
+            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
 
 @cbv(router)
