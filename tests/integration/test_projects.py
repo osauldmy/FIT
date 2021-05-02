@@ -38,7 +38,7 @@ class TestProjectCRUD:
         get_json.pop("id")
         assert get_json == json.loads(cast(bytes, create_project.request.body))
 
-    @pytest.mark.dependency(depends="post")
+    @pytest.mark.dependency(depends=["post"])
     def test_put(self, create_project: requests.Response) -> None:
         link = create_project.headers["Location"]
         new_json = {
