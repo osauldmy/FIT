@@ -3,13 +3,10 @@ version: "3"
 services:
   api:
     command: []
-    env_file:
-      - .env.testing
+    env_file: .env.testing
   db:
     volumes: []
-    env_file:
-      - .env.testing
+    env_file: .env.testing
   migrate:
-    env_file:
-      - .env.testing
+    env_file: .env.testing
 volumes: {}
