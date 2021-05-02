@@ -46,6 +46,24 @@ class TestHTTPDataSource:
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
+                "body": [],  # empty
+            },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "body": {},  # empty
+            },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "headers": {},  # empty
+            },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
                 "timeout": -1,  # constraint failure
             },
             {
@@ -73,14 +91,14 @@ class TestHTTPDataSource:
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
-                "headers": {},
+                "headers": None,
             },
             {
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
-                "body": [],  # somehow it works...
-                "headers": [],  # somehow it works...
+                "body": None,
+                "headers": None,
             },
             {
                 "url": "https://google.com",
@@ -518,7 +536,7 @@ class TestDataSourceDBModel:
             type="http",
             data={
                 "method": "PATCH",
-                "body": {},
+                "body": None,
                 "headers": {"Authorization": "API-KEY-1234"},
             },
         )
@@ -527,14 +545,14 @@ class TestDataSourceDBModel:
             jsonpath="*",
             timeout=20,
             method="GET",
-            body={},
-            headers={},
+            body=None,
+            headers=None,
         )
         model.apply_update(entity)
         assert model.url == entity.url
         assert model.timeout == entity.timeout
         assert model.data == {
             "method": "GET",
-            "body": {},
-            "headers": {},
+            "body": None,
+            "headers": None,
         }
