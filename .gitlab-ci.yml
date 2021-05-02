@@ -20,9 +20,9 @@ before_script:
 
 stages:
   - lint
+  - build
   - test
   - docs
-  - deploy
 
 lint:
   stage: lint
@@ -75,11 +75,15 @@ sphinx:
     - make html -C docs
 
 docker_build:
-  stage: deploy
+  stage: build
   image: docker:20
   services:
     - docker:20-dind
   cache: {}
   before_script: []
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   script:
-    - docker build .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
