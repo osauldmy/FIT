@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, Dict, Final
+from typing import Any, Dict, Final, List
 
 from pydantic import BaseConfig
 
@@ -18,6 +18,9 @@ class Settings(BaseConfig):
     POSTGRES_USER: str = environ.get("POSTGRES_USER", "")
     POSTGRES_PASSWORD: str = environ.get("POSTGRES_PASSWORD", "")
     DEFAULT_PAGINATION_LIMIT: int = 30
+    ORIGINS: List[str] = ["http://localhost:3000"]
+    ORIGINS_METHODS: List[str] = ["*"]
+    ORIGINS_HEADERS: List[str] = ["*"]
 
 
 SETTINGS = Settings()
