@@ -4,9 +4,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /tests
 
-COPY requirements.txt .
+COPY requirements-itest.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements-itest.txt
 
 COPY . .
 

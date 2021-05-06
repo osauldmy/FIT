@@ -9,7 +9,7 @@ services:
   db:
     volumes: []
   tests:
-    build: ./tests/integration
+    build: ./Dockerfile.itest
     volumes:
       - "./tests/integration:/tests"
     depends_on:
