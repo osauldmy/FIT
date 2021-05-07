@@ -18,13 +18,19 @@ class Settings(BaseConfig):
     POSTGRES_USER: str = environ.get("POSTGRES_USER", "")
     POSTGRES_PASSWORD: str = environ.get("POSTGRES_PASSWORD", "")
     DEFAULT_PAGINATION_LIMIT: int = 30
-    ORIGINS: List[str] = ["http://localhost:3000"]
-    ORIGINS_METHODS: List[str] = ["*"]
-    ORIGINS_HEADERS: List[str] = ["*"]
+
+    ORIGINS: List[str] = list(
+        map(str.strip, environ.get("CORS_ORIGINS", "*").split(" "))
+    )
+    ORIGINS_METHODS: List[str] = list(
+        map(str.strip, environ.get("CORS_METHODS", "*").split(" "))
+    )
+    ORIGINS_HEADERS: List[str] = list(
+        map(str.strip, environ.get("CORS_HEADERS", "*").split(" "))
+    )
 
 
 SETTINGS = Settings()
-
 
 TORTOISE_CONFIG: Final[Dict[str, Any]] = {
     "connections": {
