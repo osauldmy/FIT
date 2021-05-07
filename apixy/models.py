@@ -61,10 +61,12 @@ class DataSource(ORMModel[DataSourceEntity], Model):
 
     projects: fields.ManyToManyRelation[ProjectModel]
     id = fields.IntField(pk=True)
+    name = fields.CharField(64)
     url = fields.CharField(max_length=1024)
     type = fields.CharField(max_length=32)
     jsonpath = fields.CharField(max_length=128)
     timeout = fields.FloatField(null=True)
+    cache_expire = fields.IntField(null=True)
     data = fields.JSONField()
 
     def to_pydantic(self) -> DataSourceEntity:
@@ -75,9 +77,11 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         datasource_class: Type[DataSourceEntity] = DATA_SOURCES[self.type]
         return datasource_class(
             id=self.id,
+            name=self.name,
             url=self.url,
             jsonpath=self.jsonpath,
             timeout=self.timeout,
+            cache_expire=self.cache_expire,
             **self.data
         )
 
@@ -85,10 +89,12 @@ class DataSource(ORMModel[DataSourceEntity], Model):
     def from_pydantic(cls, entity: DataSourceEntity) -> DataSourceModel:
         entity_dict = entity.dict(exclude={"id"})
         return cls(
+            name=entity_dict.pop("name"),
             url=str(entity_dict.pop("url")),
             type=entity_dict.pop("type"),
             jsonpath=entity_dict.pop("jsonpath"),
             timeout=entity_dict.pop("timeout"),
+            cache_expire=entity_dict.pop("cache_expire"),
             data=entity_dict,
         )
 
@@ -104,7 +110,9 @@ class DataSource(ORMModel[DataSourceEntity], Model):
             raise ValueError("Cannot change type.")
         entity_dict = entity.dict(exclude={"id", "type"})
         self.url = entity_dict.pop("url")
+        self.name = entity_dict.pop("name")
         self.timeout = entity_dict.pop("timeout")
+        self.cache_expire = entity_dict.pop("cache_expire")
         self.jsonpath = entity_dict.pop("jsonpath")
         self.data.update(entity_dict)
 
