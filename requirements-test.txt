@@ -3,3 +3,4 @@ pytest-asyncio==0.15.1
 aioresponses==0.7.2
 # not sure why this isn't a dependency for fastapi but the testclient needs it
 requests==2.25.1
+fakeredis==1.5.0
