@@ -1,9 +1,13 @@
 """Module for RedisJSON cache helper functions"""
 import json
+import logging
 from functools import wraps
-from typing import Any, Dict
+from typing import Any, Optional
 
-from apixy.app import app
+import aioredis
+
+logger = logging.getLogger(__name__)
+REDIS: Optional[aioredis.Redis] = None
 
 
 def redis_cache(coroutine_method: Any) -> Any:
@@ -12,23 +16,33 @@ def redis_cache(coroutine_method: Any) -> Any:
     """
 
     @wraps(coroutine_method)
-    async def wrapper(self: Any) -> Dict[str, Any]:
+    async def wrapper(self: Any) -> Any:
         """
         Caching routines.
         """
+        if REDIS is None:
+            logger.error("Redis is not initialized")
+            return await coroutine_method(self)
+
         if (
             self.cache_expire is not None
             and self.cache_expire >= 0
-            and (cached := await app.state.redis.get(self.name))
+            and (cached := await REDIS.get(self.name))
         ):
-            return {"result": json.loads(cached)}
+            return json.loads(cached)
 
-        data: Dict[str, Any] = await coroutine_method(self)
+        data = await coroutine_method(self)
 
-        if self.cache_expire is not None and self.cache_expire >= 0:
-            await app.state.redis.set(
-                self.name, json.dumps(data["result"]), expire=self.cache_expire
-            )
+        if (
+            self.cache_expire is not None
+            and data is not None
+            and self.cache_expire >= 0
+        ):
+            try:
+                await REDIS.set(self.name, json.dumps(data), expire=self.cache_expire)
+            except TypeError as error:
+                logger.error("Cannot json.dumps() some data")
+                logger.exception(error)
 
         return data
 
