@@ -277,6 +277,7 @@ class TestMongoDBDataSource:
         [
             (
                 {
+                    "name": "mongo",
                     "url": "mongodb://some.url",
                     "database": "foo",
                     "collection": "bar",
@@ -288,6 +289,7 @@ class TestMongoDBDataSource:
             ),
             (
                 {
+                    "name": "mongo",
                     "url": "mongodb://some.url",
                     "database": "foo",
                     "collection": "bar",
@@ -299,6 +301,7 @@ class TestMongoDBDataSource:
             ),
             (
                 {
+                    "name": "mongo",
                     "url": "mongodb://some.url",
                     "database": "foo",
                     "collection": "bar",
@@ -310,6 +313,7 @@ class TestMongoDBDataSource:
             ),
             (
                 {
+                    "name": "mongo",
                     "url": "mongodb://some.url",
                     "database": "foo",
                     "collection": "bar",
@@ -428,18 +432,21 @@ class TestSQLDBDataSource:
         "raw_datasource",
         (
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "timeout": 20,
                 "jsonpath": "[*]",
                 "query": "",
             },
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost:5000",
                 "timeout": 20,
                 "jsonpath": "[*].name",
                 "query": "SELECT * FROM books",
             },
             {
+                "name": "sql",
                 "url": "mysql://repos.insttech.washington.edu",
                 "timeout": 20,
                 "jsonpath": "[*]",
@@ -457,6 +464,7 @@ class TestSQLDBDataSource:
         [
             (
                 {
+                    "name": "sql",
                     "url": "postgresql://other@localhost:5000",
                     "timeout": 20,
                     "jsonpath": "[*]",
@@ -467,6 +475,7 @@ class TestSQLDBDataSource:
             ),
             (
                 {
+                    "name": "sql",
                     "url": "postgresql://other@localhost:5000",
                     "timeout": 20,
                     "jsonpath": "[*]",
@@ -477,6 +486,7 @@ class TestSQLDBDataSource:
             ),
             (
                 {
+                    "name": "sql",
                     "url": "postgresql://other@localhost:5000",
                     "timeout": 20,
                     "jsonpath": "[*].name",
@@ -487,6 +497,7 @@ class TestSQLDBDataSource:
             ),
             (
                 {
+                    "name": "sql",
                     "url": "postgresql://other@localhost:5000",
                     "timeout": 20,
                     "jsonpath": "[*].[name,success_rate_pct]",
@@ -523,6 +534,7 @@ class TestDataSourceDBModel:
     @staticmethod
     def test_http_datasource_from_pydantic() -> None:
         entity = HTTPDataSource(
+            name="apixy",
             url="https://apixy.com",
             method="POST",
             body={"some": "body", "once": "told me"},
@@ -544,6 +556,7 @@ class TestDataSourceDBModel:
     @staticmethod
     def test_mongo_datasource_from_pydantic() -> None:
         entity = MongoDBDataSource(
+            name="mongo",
             url="mongodb://some.url",
             database="foo",
             collection="bar",
@@ -564,6 +577,7 @@ class TestDataSourceDBModel:
     @staticmethod
     def test_sql_datasource_from_pydantic() -> None:
         entity = SQLDataSource(
+            name="sql",
             url="sqlite://localhost",
             jsonpath="[*]",
             timeout=10,
@@ -592,6 +606,7 @@ class TestDataSourceDBModel:
             },
         )
         entity = HTTPDataSource(
+            name="apixy",
             url="https://apixy.cz",
             jsonpath="*",
             timeout=20,
