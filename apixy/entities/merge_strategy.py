@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Collection
-from typing import Any, Final, Mapping
+from typing import Any, Final, Iterable, Mapping
 
 from apixy.entities.shared import ForbidExtraModel
 
@@ -17,19 +17,19 @@ class MergeStrategy(ForbidExtraModel):
 
     @staticmethod
     @abstractmethod
-    def apply(data: Collection[Any]) -> Collection[Any]:
+    def apply(data: Iterable[Any]) -> Collection[Any]:
         ...
 
 
 class ConcatenationMergeStrategy(MergeStrategy):
     """
-    Simple merge strategy with concatenates results of Collection enumerating them.
+    Simple merge strategy which concatenates results of Collection enumerating them.
     """
 
     __root__: str = "concatenation"
 
     @staticmethod
-    def apply(data: Collection[Any]) -> Collection[Any]:
+    def apply(data: Iterable[Any]) -> Collection[Any]:
         return {str(index): each for index, each in enumerate(data)}
 
 
