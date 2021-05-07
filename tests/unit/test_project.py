@@ -153,3 +153,17 @@ async def test_project_fetch_data_concatenation(
 
     desired_data = {str(i): p for i, p in enumerate(fetched_payloads)}
     assert desired_data == fetched_project_data.result.data
+
+
+@pytest.mark.parametrize(
+    "merge_strategy",
+    (
+        "concatenation ",
+        "concatenation2",
+        "concat",
+        "conCATeNATION",
+    ),
+)
+def test_merge_strategy_regex(merge_strategy: str) -> None:
+    with pytest.raises(ValidationError):
+        Project(name="foo", slug="foo", merge_strategy=merge_strategy)
