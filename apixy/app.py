@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 async def startup() -> None:
     try:
         cache.REDIS = await aioredis.create_redis_pool(SETTINGS.REDIS_URI)
+    # AssertionError handles bad scheme (for e.g. http://)
+    # OSError is superclass of socket.gaierror, so it handles connection errors
     except (OSError, AssertionError) as error:
         logger.exception(error)
         logger.error("Redis connection initializing failed!")
