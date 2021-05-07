@@ -71,7 +71,7 @@ class HTTPDataSource(DataSource):
     method: Literal["GET", "POST", "PUT", "DELETE"]
     body: Optional[Dict[str, Any]] = None
     headers: Optional[Dict[str, Any]] = None
-    type: Annotated[str, Field(regex="http")] = "http"
+    type: Annotated[str, Field(regex=r"^http$")] = "http"
 
     _body_headers_not_empty = validator("body", "headers", allow_reuse=True)(
         validate_nonzero_length
@@ -101,7 +101,7 @@ class MongoDBDataSource(DataSource):
     database: str
     collection: str
     query: Dict[str, Any] = {}
-    type: Annotated[str, Field(regex="mongo")] = "mongo"
+    type: Annotated[str, Field(regex=r"^mongo$")] = "mongo"
 
     async def fetch_data(self) -> Any:
         client = motor.motor_asyncio.AsyncIOMotorClient(self.url)
@@ -121,7 +121,7 @@ class SQLDataSource(DataSource):
     """A datasource that fetches data from SQL database."""
 
     query: str
-    type: Annotated[str, Field(regex="sql")] = "sql"
+    type: Annotated[str, Field(regex=r"^sql$")] = "sql"
 
     # TODO: sql validator (allow only select)
 
