@@ -12,6 +12,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.itest
+    environment:
+      - API_HOST=api:8000
     volumes:
       - "./tests/integration:/tests"
     depends_on:

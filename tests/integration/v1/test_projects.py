@@ -1,11 +1,12 @@
 import json
+import os
 import uuid
 from typing import Dict, Final, cast
 
 import pytest
 import requests
 
-API_URL: Final[str] = "http://api:8000/api/v1"
+API_URL: Final[str] = f"http://{os.environ.get('API_HOST')}/api/v1"
 
 
 class TestProjectCRUD:
