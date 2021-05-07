@@ -72,6 +72,12 @@ class TestHTTPDataSource:
                 "jsonpath": "*",
                 "type": "peepo",  # wrong type
             },
+            {
+                "url": "https://google.com",
+                "method": "GET",
+                "jsonpath": "*",
+                "type": "https",  # wrong type (regex should be the exact match)
+            },
         ),
     )
     def test_invalid_httpdatasource(raw_datasource: Mapping[str, Any]) -> None:
@@ -194,6 +200,13 @@ class TestMongoDBDataSource:
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "database": "foo",
                 "collection": "bar",
+            },  # missing jsonpath
+            {
+                "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
+                "database": "foo",
+                "collection": "bar",
+                "jsonpath": "*",
+                "type": "mongodb",  # wrong type (regex should be the exact match)
             },
         ),
     )
@@ -351,6 +364,18 @@ class TestSQLDBDataSource:
                 "timeout": 20,
                 "jsonpath": "[*]",
             },  # missing query
+            {
+                "url": "postgresql://other@localhost",
+                "jsonpath": "*",
+                "query": "SELECT * FROM foo;",
+                "type": "SQL",  # wrong type (regex should be the exact match)
+            },
+            {
+                "url": "postgresql://other@localhost",
+                "jsonpath": "*",
+                "query": "SELECT * FROM foo;",
+                "type": "sql ",  # wrong type (regex should be the exact match)
+            },
             # {
             #     "url": "postgresql://other@localhost",
             #     "timeout": 20,
