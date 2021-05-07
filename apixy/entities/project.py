@@ -25,10 +25,12 @@ class Project(ForbidExtraModel):
 
     id: Optional[int]
     name: str = Field(max_length=64)
-    slug: str = Field(max_length=64, regex="^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")
-    merge_strategy: str = Field(regex=r"|".join(MERGE_STRATEGY_MAPPING.keys()))
     # the regex matches alphanumeric chars separated with hyphens
     # todo: we might want to do this without a regex
+    slug: str = Field(max_length=64, regex="^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$")
+    merge_strategy: str = Field(
+        regex=r"^{}$".format("$|^".join(MERGE_STRATEGY_MAPPING.keys()))
+    )
     description: Optional[str] = Field(default=None, max_length=512)
 
     class Config:
