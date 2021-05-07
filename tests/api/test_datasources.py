@@ -15,7 +15,15 @@ DS_ROUTER_BASE_URI: Final[str] = "/api/v1/datasources/"
 
 @pytest.fixture
 def ds_kwargs() -> Dict[str, Any]:
-    return dict(id=1, url="https://apixy.com/", type="http", jsonpath="*", timeout=1)
+    return dict(
+        id=1,
+        name="apixy",
+        url="https://apixy.com/",
+        type="http",
+        jsonpath="*",
+        timeout=1,
+        cache_expire=None,
+    )
 
 
 @mock.patch("apixy.models.DataSource.get")
