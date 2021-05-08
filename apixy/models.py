@@ -117,6 +117,13 @@ class DataSource(ORMModel[DataSourceEntity], Model):
         self.data.update(entity_dict)
 
 
+class FetchLogModel(Model):
+    datasource_id = fields.ForeignKeyField("models.DataSource")
+    status = fields.BooleanField()
+    nanoseconds = fields.BigIntField()
+    created = fields.DatetimeField(auto_now_add=True)
+
+
 ProjectModel = Project
 DataSourceModel = DataSource
 
