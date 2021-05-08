@@ -56,7 +56,7 @@ class TestConcatenationMergeStrategy:
             ),
         ),
     )
-    def test_concatenation_merge_strategy_success(
+    def test_merge_success(
         inputs: Iterable[Any], outputs_reference: Dict[str, Any]
     ) -> None:
         assert ConcatenationMergeStrategy().apply(inputs) == outputs_reference
