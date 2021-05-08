@@ -28,9 +28,9 @@ class FetchLogger:
         """Adds a log entry about a fetch attempt."""
 
     @staticmethod
-    async def fetch_timer(coroutine: Callable[[], Awaitable[Any]]) -> Any:
+    def fetch_timer(coroutine: Callable[[], Awaitable[Any]]) -> Any:
         """
-        A decorator for timing the called fetch coroutine.
+        A decorator-like utility for timing the called fetch coroutine.
         :param coroutine: the fetch method to call
         :return: the wrapped coroutine's awaited result along with time in nanoseconds
         """
@@ -42,7 +42,7 @@ class FetchLogger:
             time_measured = time.perf_counter_ns() - time_start
             return result, time_measured
 
-        return wrapped
+        return wrapped()
 
 
 class Project(ForbidExtraModel):
@@ -71,15 +71,12 @@ class ProjectWithDataSources(Project):
     async def fetch_data(self, fetch_logger: FetchLogger) -> ProxyResponse:
 
         fetched, errors = [], []
-
-        gathered = await asyncio.gather(
-            *(
-                fetch_logger.fetch_timer(datasource.fetch_data)
-                for datasource in self.datasources
-            ),
-            return_exceptions=True
+        fetch = (
+            fetch_logger.fetch_timer(datasource.fetch_data)
+            for datasource in self.datasources
         )
-
+        gathered = await asyncio.gather(*fetch, return_exceptions=True)
+        print(gathered[0])
         for index, (result, nanoseconds) in enumerate(gathered):
             if not isinstance(result, Exception):
                 fetched.append(result)

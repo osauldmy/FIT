@@ -9,12 +9,12 @@ from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 
-from apixy.entities.project import Project, ProjectInput
+from apixy.entities.project import FetchLogger, Project, ProjectInput
 from apixy.models import DataSourceModel, ProjectModel
 
 from ...entities.proxy_response import ProxyResponse
 from .datasources import DataSourceUnion
-from .shared import ApixyRouter, pagination_params
+from .shared import ApixyRouter, get_fetch_logger, pagination_params
 
 logger = logging.getLogger(__name__)
 
@@ -105,12 +105,14 @@ class ProjectsView:
         return None
 
     @router.get(PREFIX + "/{project_id}/fetch", response_model=ProxyResponse)
-    async def fetch(self, project_id: int) -> ProxyResponse:
+    async def fetch(
+        self, project_id: int, fetch_logger: FetchLogger = Depends(get_fetch_logger)
+    ) -> ProxyResponse:
         """Fetches and aggregates all data sources tied to project id."""
         try:
             model = await ProjectModel.get(id=project_id)
             project = await model.to_pydantic_with_datasources()
-            return await project.fetch_data()
+            return await project.fetch_data(fetch_logger)
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 

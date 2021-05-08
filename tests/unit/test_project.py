@@ -5,8 +5,15 @@ import pytest
 from pydantic.error_wrappers import ValidationError
 
 from apixy.entities.datasource import DATA_SOURCES
-from apixy.entities.project import Project, ProjectWithDataSources
+from apixy.entities.project import FetchLogger, Project, ProjectWithDataSources
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
+
+
+class MockLogger(FetchLogger):
+    async def save_log(
+        self, datasource_id: int, nanoseconds: int, success: bool
+    ) -> None:
+        pass
 
 
 @pytest.fixture
@@ -146,7 +153,7 @@ async def test_project_fetch_data_concatenation(
         datasources=data_sources,
     )
 
-    fetched_project_data = await project.fetch_data()
+    fetched_project_data = await project.fetch_data(MockLogger())
 
     for data_source in data_sources:
         data_source.copy.return_value.fetch_data.assert_awaited_once()

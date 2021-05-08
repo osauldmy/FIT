@@ -53,5 +53,5 @@ class DBFetchLogger(FetchLogger):
         )
 
 
-async def fetch_logger() -> DBFetchLogger:
+async def get_fetch_logger() -> DBFetchLogger:
     return DBFetchLogger()
