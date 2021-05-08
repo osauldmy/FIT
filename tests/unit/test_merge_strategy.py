@@ -61,16 +61,6 @@ class TestConcatenationMergeStrategy:
     ) -> None:
         assert ConcatenationMergeStrategy().apply(inputs) == outputs_reference
 
-    @staticmethod
-    @pytest.mark.parametrize(
-        "inputs,outputs_reference",
-        (),
-    )
-    def test_concatenation_merge_strategy_failure(
-        inputs: Iterable[Any], outputs_reference: Dict[str, Any]
-    ) -> None:
-        assert ConcatenationMergeStrategy().apply(inputs) == outputs_reference
-
 
 class TestRecursiveMergeStrategy:
     @staticmethod
