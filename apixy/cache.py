@@ -27,7 +27,7 @@ def redis_cache(coroutine_method: Any) -> Any:
         if (
             self.cache_expire is not None
             and self.cache_expire >= 0
-            and (cached := await REDIS.get(self.name))
+            and (cached := await REDIS.get(self.id))
         ):
             return json.loads(cached)
 
@@ -39,7 +39,7 @@ def redis_cache(coroutine_method: Any) -> Any:
             and self.cache_expire >= 0
         ):
             try:
-                await REDIS.set(self.name, json.dumps(data), expire=self.cache_expire)
+                await REDIS.set(self.id, json.dumps(data), expire=self.cache_expire)
             except TypeError as error:
                 logger.error("Cannot json.dumps() some data")
                 logger.exception(error)
