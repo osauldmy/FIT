@@ -20,59 +20,69 @@ class TestHTTPDataSource:
             {"url": "example.com"},  # missing most of attributes
             {"url": "", "method": "FOO"},  # wrong HTTP method
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "",  # empty jmespath
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "a": "b",  # extra attribute
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "headers": [""],  # wrong attr type
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "body": [""],  # wrong attr type
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "body": [],  # empty
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "body": {},  # empty
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "headers": {},  # empty
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "timeout": -1,  # constraint failure
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
                 "type": "peepo",  # wrong type
             },
             {
+                "name": "http1",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
@@ -212,11 +222,13 @@ class TestMongoDBDataSource:
                 "jsonpath": "*",
             },  # HTTP, not MongoDB
             {
+                "name": "mongo",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "database": "foo",
                 "collection": "bar",
             },  # missing jsonpath
             {
+                "name": "mongo",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "database": "foo",
                 "collection": "bar",
@@ -358,16 +370,19 @@ class TestSQLDBDataSource:
             dict(),  # invalid1
             {"foo": "bar"},  # invalid2
             {
+                "name": "sql",
                 "url": "https://google.com",
                 "method": "GET",
                 "jsonpath": "*",
             },  # HTTP, not SQL
             {
+                "name": "sql",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "database": "foo",
                 "collection": "bar",
             },  # invalid mongo
             {
+                "name": "sql",
                 "url": "mongodb+srv://cluster-0.foo.mongodb.net/apixy",
                 "jsonpath": "*",
                 "database": "foo",
@@ -378,29 +393,34 @@ class TestSQLDBDataSource:
                 "url": "postgresql://other@localhost",
             },  # only address
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "timeout": "twenty",
                 "jsonpath": "[*]",
                 "query": "SELECT * FROM books",
             },  # incorrect timeout type
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "timeout": 20,
                 "jsonpath": "choose everything",
                 "query": "SELECT * FROM books",
             },  # incorrect jsonpath format
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "timeout": 20,
                 "jsonpath": "[*]",
             },  # missing query
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "jsonpath": "*",
                 "query": "SELECT * FROM foo;",
                 "type": "SQL",  # wrong type (regex should be the exact match)
             },
             {
+                "name": "sql",
                 "url": "postgresql://other@localhost",
                 "jsonpath": "*",
                 "query": "SELECT * FROM foo;",
