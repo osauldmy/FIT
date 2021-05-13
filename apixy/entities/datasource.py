@@ -224,7 +224,10 @@ class FetchLogger:
 
     @abstractmethod
     async def save_log(
-        self, datasource_id: int, nanoseconds: int, fetch_status: FetchStatus
+        self,
+        datasource_id: int,
+        nanoseconds: int,
+        fetch_status: FetchLogger.FetchStatus,
     ) -> None:
         """Adds a log entry about a fetch attempt."""
 
