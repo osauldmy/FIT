@@ -141,7 +141,7 @@ class SQLDataSource(DataSource):
             raise ValueError("Query must contain only one statement")
 
         if statements[0].get_type() != "SELECT":
-            raise ValueError("Query can be have only SELECT statements")
+            raise ValueError("Query can be only SELECT statement")
 
         return query
 
