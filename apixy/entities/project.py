@@ -52,27 +52,28 @@ class ProjectWithDataSources(Project):
             for datasource in self.datasources
         )
         gathered = await asyncio.gather(*fetch, return_exceptions=True)
-        print(gathered[0])
         for index, (result, nanoseconds) in enumerate(gathered):
             if not isinstance(result, Exception):
                 fetched.append(result)
-                success = True
+                status = FetchLogger.FetchStatus.SUCCESS
             else:
                 logger.exception(result)
-                success = False
+                status = FetchLogger.FetchStatus.ERROR
                 # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
                 if isinstance(result, asyncio.TimeoutError):
                     errors.append({self.datasources[index].url: "Timeout!"})
+                    status = FetchLogger.FetchStatus.TIMEOUT
                 elif isinstance(result, DataSourceFetchError):
                     errors.append({self.datasources[index].url: "Fetch error!"})
 
-            if self.datasources[index].id is None:
-                raise ValueError("DataSource has no ID.")
-            asyncio.create_task(
-                fetch_logger.save_log(
-                    cast(int, self.datasources[index].id), nanoseconds, success=success
+            if self.datasources[index].id is not None:
+                asyncio.create_task(
+                    fetch_logger.save_log(
+                        cast(int, self.datasources[index].id),
+                        nanoseconds,
+                        fetch_status=status,
+                    )
                 )
-            )
 
         merged = MERGE_STRATEGY_MAPPING[self.merge_strategy].apply(fetched)
         return ProxyResponse(

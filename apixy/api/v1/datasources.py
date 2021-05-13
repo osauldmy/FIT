@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Dict, Final, List, Optional, Union
+from collections import OrderedDict
+from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
@@ -8,6 +9,7 @@ from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
+from tortoise.functions import Avg
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 from tortoise.transactions import in_transaction
@@ -15,13 +17,15 @@ from tortoise.transactions import in_transaction
 from apixy.entities.datasource import (
     DataSource,
     DataSourceFetchError,
+    DataSourceFetchLogSummary,
     DataSourceInput,
     DataSourceUnion,
+    FetchLogger,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
 )
-from apixy.models import DataSourceModel
+from apixy.models import DataSourceModel, FetchLogModel
 
 from .shared import ApixyRouter, pagination_params
 
@@ -32,6 +36,15 @@ logger = logging.getLogger(__name__)
 PREFIX: Final[str] = "/datasources"
 
 router = ApixyRouter(tags=["DataSources"])
+
+
+async def get_datasource_by_id(datasource_id: int) -> DataSourceModel:
+    try:
+        return await DataSourceModel.get(id=datasource_id)
+    except DoesNotExist as exception:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "Invalid Project ID."
+        ) from exception
 
 
 @cbv(router)
@@ -52,13 +65,11 @@ class DataSourcesView:
         PREFIX + "/{datasource_id}",
         response_model=DataSourceUnion,
     )
-    async def get(self, datasource_id: int) -> DataSourceUnion:
+    async def get(
+        self, datasource_model: DataSourceModel = Depends(get_datasource_by_id)
+    ) -> DataSourceUnion:
         """Endpoint for a single data source."""
-        try:
-            queryset = await DataSourceModel.get(id=datasource_id)
-            return DataSourceUnion.parse_obj(queryset.to_pydantic())
-        except DoesNotExist as err:
-            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        return DataSourceUnion.parse_obj(datasource_model.to_pydantic())
 
     @router.get(
         PREFIX,
@@ -109,6 +120,61 @@ class DataSourcesView:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         await queryset.delete()
         return None
+
+
+@cbv(router)
+class DataSourceStatsView:
+    @staticmethod
+    def percentage_of(value: int, total_count: int) -> Optional[float]:
+        if total_count == 0:
+            return None
+        return 100 * value / total_count
+
+    @staticmethod
+    def first_of_list(value: List[Any]) -> Any:
+        return value[0] if len(value) > 0 else None
+
+    @router.get(
+        PREFIX + "/{datasource_id}/stats", response_model=DataSourceFetchLogSummary
+    )
+    async def stats(
+        self, datasource_model: DataSourceModel = Depends(get_datasource_by_id)
+    ) -> DataSourceFetchLogSummary:
+        queryset = FetchLogModel.filter(datasource_id=datasource_model.id)
+        total = await queryset.count()
+        queries: OrderedDict[str, Tuple[Any, Callable[[Any], Any]]] = OrderedDict(
+            average_success_time=(
+                queryset.filter(status=FetchLogger.FetchStatus.SUCCESS)
+                .group_by()
+                .annotate(average_time=Avg("nanoseconds"))
+                .first()
+                .values_list("average_time", flat=True),
+                # convert nanoseconds to milliseconds
+                lambda x: x[0] * 1e-6 if len(x) > 0 else None,
+            ),
+            success_rate=(
+                queryset.filter(status=FetchLogger.FetchStatus.SUCCESS).count(),
+                lambda x: self.percentage_of(x, total),
+            ),
+            timeout_rate=(
+                queryset.filter(status=FetchLogger.FetchStatus.TIMEOUT).count(),
+                lambda x: self.percentage_of(x, total),
+            ),
+            error_rate=(
+                queryset.filter(status=FetchLogger.FetchStatus.ERROR).count(),
+                lambda x: self.percentage_of(x, total),
+            ),
+            first_call=(
+                queryset.order_by("created").first().values_list("created", flat=True),
+                self.first_of_list,
+            ),
+            last_call=(
+                queryset.order_by("-created").first().values_list("created", flat=True),
+                self.first_of_list,
+            ),
+        )
+        results = {key: value[1](await value[0]) for (key, value) in queries.items()}
+        return DataSourceFetchLogSummary(calls=total, **results)
 
     @router.get(PREFIX + "/{datasource_id}/test")
     async def test(self, datasource_id: int) -> JSONResponse:

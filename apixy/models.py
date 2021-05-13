@@ -9,6 +9,7 @@ from tortoise.models import Model
 
 from apixy.entities.datasource import DATA_SOURCES
 from apixy.entities.datasource import DataSource as DataSourceEntity
+from apixy.entities.datasource import FetchLogger
 from apixy.entities.project import Project as ProjectEntity
 from apixy.entities.project import (
     ProjectWithDataSources as ProjectWithDataSourcesEntity,
@@ -118,8 +119,8 @@ class DataSource(ORMModel[DataSourceEntity], Model):
 
 
 class FetchLogModel(Model):
-    datasource_id = fields.ForeignKeyField("models.DataSource")
-    status = fields.BooleanField()
+    datasource = fields.ForeignKeyField("models.DataSource")
+    status = fields.IntEnumField(FetchLogger.FetchStatus)
     nanoseconds = fields.BigIntField()
     created = fields.DatetimeField(auto_now_add=True)
 
@@ -127,4 +128,4 @@ class FetchLogModel(Model):
 ProjectModel = Project
 DataSourceModel = DataSource
 
-__all__ = ["ProjectModel", "DataSourceModel"]
+__all__ = ["ProjectModel", "DataSourceModel", "FetchLogModel"]

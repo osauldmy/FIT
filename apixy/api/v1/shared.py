@@ -7,7 +7,7 @@ from starlette.responses import Response
 
 from apixy.config import SETTINGS
 from apixy.entities.project import FetchLogger
-from apixy.models import FetchLogModel
+from apixy.models import DataSourceModel, FetchLogModel
 
 
 class ApixyRouter(APIRouter):
@@ -46,10 +46,15 @@ async def pagination_params(
 
 class DBFetchLogger(FetchLogger):
     async def save_log(
-        self, datasource_id: int, nanoseconds: int, success: bool
+        self,
+        datasource_id: int,
+        nanoseconds: int,
+        fetch_status: FetchLogger.FetchStatus,
     ) -> None:
         await FetchLogModel.create(
-            datasource_id=datasource_id, time=nanoseconds, success=success
+            datasource=await DataSourceModel.get(id=datasource_id),
+            nanoseconds=nanoseconds,
+            status=fetch_status,
         )
 
 

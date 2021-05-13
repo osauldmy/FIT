@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import socket
 import time
 from abc import abstractmethod
 from urllib.parse import urlparse
+from datetime import datetime
+from enum import IntEnum, auto
 from functools import wraps
 from typing import (
     Annotated,
@@ -214,9 +217,14 @@ class SQLDataSource(DataSource):
 
 
 class FetchLogger:
+    class FetchStatus(IntEnum):
+        SUCCESS = auto()
+        TIMEOUT = auto()
+        ERROR = auto()
+
     @abstractmethod
     async def save_log(
-        self, datasource_id: int, nanoseconds: int, success: bool
+        self, datasource_id: int, nanoseconds: int, fetch_status: FetchStatus
     ) -> None:
         """Adds a log entry about a fetch attempt."""
 
@@ -231,11 +239,24 @@ class FetchLogger:
         @wraps(coroutine)
         async def wrapped() -> Tuple[Any, int]:
             time_start = time.perf_counter_ns()
-            result = await coroutine()
+            try:
+                result = await coroutine()
+            except (asyncio.TimeoutError, DataSourceFetchError) as exc:
+                result = exc
             time_measured = time.perf_counter_ns() - time_start
             return result, time_measured
 
         return wrapped()
+
+
+class DataSourceFetchLogSummary(ForbidExtraModel):
+    calls: int
+    average_success_time: Optional[int]
+    success_rate: Optional[float]
+    timeout_rate: Optional[float]
+    error_rate: Optional[float]
+    first_call: Optional[datetime]
+    last_call: Optional[datetime]
 
 
 class HTTPDataSourceInput(HTTPDataSource):
