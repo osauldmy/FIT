@@ -67,7 +67,7 @@ class ProjectWithDataSources(Project):
                 "size": len(merged),
                 "data": merged,
             },
-            errors={"size": len(errors), "data": errors},
+            errors=None if len(errors) == 0 else {"size": len(errors), "data": errors},
         )
 
 
