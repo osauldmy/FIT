@@ -12,6 +12,7 @@ from apixy.entities.datasource import HTTPDataSource
 @pytest.fixture
 def http_datasource() -> HTTPDataSource:
     return HTTPDataSource(
+        id=1,
         name="http",
         url="http://foo.bar",
         method="GET",
@@ -65,7 +66,7 @@ async def test_cache_disabled(
                 payload=["foo", "bar"],
             )
             data = await http_datasource.fetch_data()
-        cached = await redis.get(http_datasource.name)
+        cached = await redis.get(http_datasource.id)
 
     assert cached != data
     assert cached is None
@@ -86,4 +87,4 @@ async def test_cache_enabled_mock(
             )
             data = await http_datasource.fetch_data()
 
-        assert json.loads(await redis.get(http_datasource.name)) == data
+        assert json.loads(await redis.get(http_datasource.id)) == data
