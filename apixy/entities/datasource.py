@@ -140,9 +140,8 @@ class SQLDataSource(DataSource):
         if len(statements) != 1:
             raise ValueError("Query must contain only one statement")
 
-        for statement in statements:
-            if statement.get_type() != "SELECT":
-                raise ValueError("Query can be have only SELECT statements")
+        if statements[0].get_type() != "SELECT":
+            raise ValueError("Query can be have only SELECT statements")
 
         return query
 
