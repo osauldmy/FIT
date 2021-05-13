@@ -11,7 +11,7 @@ from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_R
 
 class MockLogger(FetchLogger):
     async def save_log(
-        self, datasource_id: int, nanoseconds: int, success: bool
+        self, datasource_id: int, nanoseconds: int, status: FetchLogger.FetchStatus
     ) -> None:
         pass
 
