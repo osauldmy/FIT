@@ -98,7 +98,7 @@ class HTTPDataSource(DataSource):
                 logger.exception(error)
                 raise DataSourceFetchError from error
 
-        return jmespath.compile(self.jsonpath).search(data)
+        return jmespath.search(self.jsonpath, data)
 
 
 class MongoDBDataSource(DataSource):
@@ -121,7 +121,7 @@ class MongoDBDataSource(DataSource):
             finally:
                 await cursor.close()
 
-        return jmespath.compile(self.jsonpath).search(data)
+        return jmespath.search(self.jsonpath, data)
 
 
 class SQLDataSource(DataSource):
@@ -142,7 +142,7 @@ class SQLDataSource(DataSource):
                 logger.exception(error)
                 raise DataSourceFetchError from error
 
-        return jmespath.compile(self.jsonpath).search([dict(row) for row in rows])
+        return jmespath.search(self.jsonpath, [dict(row) for row in rows])
 
 
 class HTTPDataSourceInput(HTTPDataSource):
