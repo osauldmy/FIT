@@ -253,11 +253,17 @@ class FetchLogger:
 
 
 class DataSourceFetchLogSummary(ForbidExtraModel):
-    calls: int
-    average_success_time: Optional[int]
-    success_rate: Optional[float]
-    timeout_rate: Optional[float]
-    error_rate: Optional[float]
+    """A summary of fetch attempts on this DataSource."""
+
+    calls: int = Field(title="Number of calls")
+    average_success_time: Optional[int] = Field(
+        title="Average fetch time in ms",
+        description="How long it takes to fetch data "
+        "(only takes successful calls into account)",
+    )
+    success_rate: Optional[float] = Field(title="Percentage of successful calls")
+    timeout_rate: Optional[float] = Field(title="Percentage of calls that timed out")
+    error_rate: Optional[float] = Field(title="Percentage of calls that failed")
     first_call: Optional[datetime]
     last_call: Optional[datetime]
 
