@@ -87,14 +87,13 @@ class HTTPDataSource(DataSource):
     async def fetch_data(self) -> Any:
         async with async_timeout.timeout(self.timeout):
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.request(
-                        method=self.method,
-                        url=self.url,
-                        json=self.body,
-                        headers=self.headers,
-                    ) as response:
-                        data = await response.json()
+                async with aiohttp.request(
+                    method=self.method,
+                    url=self.url,
+                    json=self.body,
+                    headers=self.headers,
+                ) as response:
+                    data = await response.json()
             except aiohttp.ClientError as error:
                 logger.exception(error)
                 raise DataSourceFetchError from error
