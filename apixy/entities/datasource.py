@@ -134,8 +134,12 @@ class SQLDataSource(DataSource):
     @validator("query")
     @classmethod
     def validate_query(cls, query: str) -> str:
-        """Validator for jmespath strings"""
+        """Validator for query"""
         statements = sqlparse.parse(query)
+
+        if len(statements) != 1:
+            raise ValueError("Query must contain only one statement")
+
         for statement in statements:
             if statement.get_type() != "SELECT":
                 raise ValueError("Query can be have only SELECT statements")

@@ -433,6 +433,20 @@ class TestSQLDBDataSource:
                 "jsonpath": "[*]",
                 "query": "DROP TABLE IF EXISTS books",
             },  # forbidden query
+            {
+                "name": "sql",
+                "url": "postgresql://other@localhost:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books; SELECT * FROM authors;",
+            },
+            {
+                "name": "sql",
+                "url": "postgresql://other@localhost",
+                "timeout": 20,
+                "jsonpath": "[*]",
+                "query": "",
+            },
             # {
             #     "name": "sql",
             #     "url": "postgresql://other@localhost",
@@ -454,13 +468,6 @@ class TestSQLDBDataSource:
     @pytest.mark.parametrize(
         "raw_datasource",
         (
-            {
-                "name": "sql",
-                "url": "postgresql://other@localhost",
-                "timeout": 20,
-                "jsonpath": "[*]",
-                "query": "",
-            },
             {
                 "name": "sql",
                 "url": "postgresql://other@localhost:5000",
