@@ -406,19 +406,22 @@ class TestSQLDBDataSource:
                 "query": "SELECT * FROM foo;",
                 "type": "sql ",  # wrong type (regex should be the exact match)
             },
+            {
+                "name": "sql",
+                "url": "postgresql://other@localhost",
+                "timeout": 20,
+                "jsonpath": "[*]",
+                "query": "DROP TABLE IF EXISTS books",
+            },  # forbidden query
             # {
+            #     "name": "sql",
             #     "url": "postgresql://other@localhost",
             #     "timeout": 20,
             #     "jsonpath": "[*]",
-            #     "query": "DROP TABLE IF EXISTS books",
-            # },  # forbidden query
-            # {
-            #     "url": "postgresql://other@localhost",
-            #     "timeout": 20,
-            #     "jsonpath": "[*]",
-            #     "query": "SELECT 'DROP TABLE ' + '[' + TABLE_SCHEMA + ']\
-            #               .[' + TABLE_NAME + ']'\ "
-            #              "FROM INFORMATION_SCHEMA.TABLES\ "
+            #     # "query": "SELECT * FROM foo",
+            #     "query": "SELECT 'DROP TABLE ' + '[' + TABLE_SCHEMA + ']"\
+            #              ".[' + TABLE_NAME + ']'" \
+            #              "FROM INFORMATION_SCHEMA.TABLES" \
             #              "ORDER BY TABLE_SCHEMA, TABLE_NAME",
             # },  # forbidden query
         ),

@@ -9,6 +9,7 @@ import async_timeout
 import databases
 import jmespath
 import motor.motor_asyncio
+import sqlparse
 from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
 from apixy.cache import redis_cache
@@ -130,7 +131,16 @@ class SQLDataSource(DataSource):
     query: str
     type: Annotated[str, Field(regex=r"^sql$")] = "sql"
 
-    # TODO: sql validator (allow only select)
+    @validator("query")
+    @classmethod
+    def validate_query(cls, query: str) -> str:
+        """Validator for jmespath strings"""
+        statements = sqlparse.parse(query)
+        for statement in statements:
+            if statement.get_type() != "SELECT":
+                raise ValueError("Query can be have only SELECT statements")
+
+        return query
 
     @redis_cache
     async def fetch_data(self) -> Any:

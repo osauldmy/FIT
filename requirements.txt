@@ -8,5 +8,6 @@ fastapi_utils==0.2.1
 jmespath==0.10.0
 motor==2.4.0
 pydantic<2.0.0,>=1.0.0
+sqlparse==0.4.1
 tortoise-orm[asyncpg]==0.17.1
 uvicorn[standard]==0.13.4
