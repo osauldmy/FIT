@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from .datasource import (
     DataSourceFetchError,
+    FetchLogger,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
@@ -18,31 +19,6 @@ from .proxy_response import ProxyResponse
 from .shared import ForbidExtraModel, OmitFieldsConfig
 
 logger = logging.getLogger(__name__)
-
-
-class FetchLogger:
-    @abstractmethod
-    async def save_log(
-        self, datasource_id: int, nanoseconds: int, success: bool
-    ) -> None:
-        """Adds a log entry about a fetch attempt."""
-
-    @staticmethod
-    def fetch_timer(coroutine: Callable[[], Awaitable[Any]]) -> Any:
-        """
-        A decorator-like utility for timing the called fetch coroutine.
-        :param coroutine: the fetch method to call
-        :return: the wrapped coroutine's awaited result along with time in nanoseconds
-        """
-
-        @wraps(coroutine)
-        async def wrapped() -> Tuple[Any, int]:
-            time_start = time.perf_counter_ns()
-            result = await coroutine()
-            time_measured = time.perf_counter_ns() - time_start
-            return result, time_measured
-
-        return wrapped()
 
 
 class Project(ForbidExtraModel):

@@ -2,9 +2,24 @@ from __future__ import annotations
 
 import logging
 import socket
+import time
 from abc import abstractmethod
-from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type, Union
 from urllib.parse import urlparse
+from functools import wraps
+from typing import (
+    Annotated,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Final,
+    Literal,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import aiohttp
 import async_timeout
@@ -196,6 +211,31 @@ class SQLDataSource(DataSource):
                 raise DataSourceFetchError from error
 
         return jmespath.search(self.jsonpath, [dict(row) for row in rows])
+
+
+class FetchLogger:
+    @abstractmethod
+    async def save_log(
+        self, datasource_id: int, nanoseconds: int, success: bool
+    ) -> None:
+        """Adds a log entry about a fetch attempt."""
+
+    @staticmethod
+    def fetch_timer(coroutine: Callable[[], Awaitable[Any]]) -> Any:
+        """
+        A decorator-like utility for timing the called fetch coroutine.
+        :param coroutine: the fetch method to call
+        :return: the wrapped coroutine's awaited result along with time in nanoseconds
+        """
+
+        @wraps(coroutine)
+        async def wrapped() -> Tuple[Any, int]:
+            time_start = time.perf_counter_ns()
+            result = await coroutine()
+            time_measured = time.perf_counter_ns() - time_start
+            return result, time_measured
+
+        return wrapped()
 
 
 class HTTPDataSourceInput(HTTPDataSource):
