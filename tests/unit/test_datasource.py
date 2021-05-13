@@ -439,14 +439,14 @@ class TestSQLDBDataSource:
                 "timeout": 20,
                 "jsonpath": "[*].name",
                 "query": "SELECT * FROM books; SELECT * FROM authors;",
-            },
+            },  # multiple statements
             {
                 "name": "sql",
                 "url": "postgresql://other@localhost",
                 "timeout": 20,
                 "jsonpath": "[*]",
                 "query": "",
-            },
+            },  # empty query
             # {
             #     "name": "sql",
             #     "url": "postgresql://other@localhost",
