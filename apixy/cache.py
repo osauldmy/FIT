@@ -2,12 +2,14 @@
 import json
 import logging
 from functools import wraps
-from typing import Any, Optional
+from typing import Any, Final, Optional
 
 import aioredis
 
 logger = logging.getLogger(__name__)
 REDIS: Optional[aioredis.Redis] = None
+
+REDIS_DATASOURCE_CACHE_KEY: Final[str] = "{self.id}:{self.name}"
 
 
 def redis_cache(coroutine_method: Any) -> Any:
@@ -24,10 +26,12 @@ def redis_cache(coroutine_method: Any) -> Any:
             logger.error("Redis is not initialized")
             return await coroutine_method(self)
 
+        key = REDIS_DATASOURCE_CACHE_KEY.format(self=self)
+
         if (
             self.cache_expire is not None
             and self.cache_expire >= 0
-            and (cached := await REDIS.get(self.id))
+            and (cached := await REDIS.get(key))
         ):
             return json.loads(cached)
 
@@ -39,7 +43,7 @@ def redis_cache(coroutine_method: Any) -> Any:
             and self.cache_expire >= 0
         ):
             try:
-                await REDIS.set(self.id, json.dumps(data), expire=self.cache_expire)
+                await REDIS.set(key, json.dumps(data), expire=self.cache_expire)
             except TypeError as error:
                 logger.error("Cannot json.dumps() some data")
                 logger.exception(error)
