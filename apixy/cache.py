@@ -9,7 +9,7 @@ import aioredis
 logger = logging.getLogger(__name__)
 REDIS: Optional[aioredis.Redis] = None
 
-REDIS_DATASOURCE_CACHE_KEY: Final[str] = "{self.id}:{self.name}"
+REDIS_DATASOURCE_CACHE_KEY: Final[str] = "datasource:{self.id}"
 
 
 def redis_cache(coroutine_method: Any) -> Any:
