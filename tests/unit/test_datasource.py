@@ -390,59 +390,73 @@ class TestSQLDBDataSource:
                 "query": {},
             },  # mongo not SQL
             {
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
             },  # only address
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "timeout": "twenty",
                 "jsonpath": "[*]",
                 "query": "SELECT * FROM books",
             },  # incorrect timeout type
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "timeout": 20,
                 "jsonpath": "choose everything",
                 "query": "SELECT * FROM books",
             },  # incorrect jsonpath format
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "timeout": 20,
                 "jsonpath": "[*]",
             },  # missing query
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "jsonpath": "*",
                 "query": "SELECT * FROM foo;",
                 "type": "SQL",  # wrong type (regex should be the exact match)
             },
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "jsonpath": "*",
                 "query": "SELECT * FROM foo;",
                 "type": "sql ",  # wrong type (regex should be the exact match)
             },
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@localhost:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books",
+            },  # localhost url
+            {
+                "name": "sql",
+                "url": "postgresql://other@127.0.0.1:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books",
+            },  # localhost url
+            {
+                "name": "sql",
+                "url": "postgresql://other@google.com",
                 "timeout": 20,
                 "jsonpath": "[*]",
                 "query": "DROP TABLE IF EXISTS books",
             },  # forbidden query
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost:5000",
+                "url": "postgresql://other@google.com:5000",
                 "timeout": 20,
                 "jsonpath": "[*].name",
                 "query": "SELECT * FROM books; SELECT * FROM authors;",
             },  # multiple statements
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost",
+                "url": "postgresql://other@google.com",
                 "timeout": 20,
                 "jsonpath": "[*]",
                 "query": "",
@@ -470,7 +484,7 @@ class TestSQLDBDataSource:
         (
             {
                 "name": "sql",
-                "url": "postgresql://other@localhost:5000",
+                "url": "postgresql://other@google.com:5000",
                 "timeout": 20,
                 "jsonpath": "[*].name",
                 "query": "SELECT * FROM books",
@@ -495,7 +509,7 @@ class TestSQLDBDataSource:
             (
                 {
                     "name": "sql",
-                    "url": "postgresql://other@localhost:5000",
+                    "url": "postgresql://other@google.com:5000",
                     "timeout": 20,
                     "jsonpath": "[*]",
                     "query": "SELECT * FROM books",
@@ -506,7 +520,7 @@ class TestSQLDBDataSource:
             (
                 {
                     "name": "sql",
-                    "url": "postgresql://other@localhost:5000",
+                    "url": "postgresql://other@google.com:5000",
                     "timeout": 20,
                     "jsonpath": "[*]",
                     "query": "SELECT * FROM books",
@@ -517,7 +531,7 @@ class TestSQLDBDataSource:
             (
                 {
                     "name": "sql",
-                    "url": "postgresql://other@localhost:5000",
+                    "url": "postgresql://other@google.com:5000",
                     "timeout": 20,
                     "jsonpath": "[*].name",
                     "query": "SELECT * FROM books",
@@ -528,7 +542,7 @@ class TestSQLDBDataSource:
             (
                 {
                     "name": "sql",
-                    "url": "postgresql://other@localhost:5000",
+                    "url": "postgresql://other@fit.cvut.cz:5000",
                     "timeout": 20,
                     "jsonpath": "[*].[name,success_rate_pct]",
                     "query": "SELECT * FROM books",
@@ -608,7 +622,7 @@ class TestDataSourceDBModel:
     def test_sql_datasource_from_pydantic() -> None:
         entity = SQLDataSource(
             name="sql",
-            url="sqlite://localhost",
+            url="sqlite://google.com",
             jsonpath="[*]",
             timeout=10,
             query="SELECT * FROM table;",

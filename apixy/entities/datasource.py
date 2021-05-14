@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import logging
+import socket
 from abc import abstractmethod
 from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type, Union
+from urllib.parse import urlparse
 
 import aiohttp
 import async_timeout
@@ -130,6 +132,28 @@ class SQLDataSource(DataSource):
 
     query: str
     type: Annotated[str, Field(regex=r"^sql$")] = "sql"
+
+    @validator("url")
+    @classmethod
+    def validate_url(cls, url: str) -> str:
+        """Validator for sql database url"""
+        parsed_url = urlparse(url)
+
+        # if parsed_url.hostname in ("localhost", "0.0.0.0"):
+        if parsed_url.hostname in ("localhost", "127.0.0.1"):
+            raise ValueError("SQL database url cannot be localhost address")
+        localhost = socket.gethostname()
+        local_address = socket.getaddrinfo(localhost, parsed_url.port)
+        try:
+            target_address = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
+        except socket.gaierror as socket_error:
+            raise ValueError("Invalid destination url") from socket_error
+        for (_, _, _, _, socket_address) in local_address:
+            for (_, _, _, _, r_socket_address) in target_address:
+                if r_socket_address[0] == socket_address[0]:
+                    raise ValueError("SQL database url cannot be localhost address")
+
+        return url
 
     @validator("query")
     @classmethod
