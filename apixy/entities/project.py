@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from .datasource import (
     DataSourceFetchError,
@@ -78,3 +78,17 @@ class ProjectInput(Project):
 
     class Config(OmitFieldsConfig, Project.Config):
         omit_fields = ("id",)
+
+        @classmethod
+        def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
+            super().schema_extra(schema, model)
+            schema.update(
+                {
+                    "example": {
+                        "name": "Example project",
+                        "slug": "example",
+                        "merge_strategy": "concatenation",
+                        "description": "This is an example project.",
+                    }
+                }
+            )

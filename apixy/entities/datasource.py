@@ -149,15 +149,63 @@ class HTTPDataSourceInput(HTTPDataSource):
     class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
 
+        @classmethod
+        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+            super().schema_extra(schema, model)
+            schema.update(
+                {
+                    "example": {
+                        "url": "https://example.org/api",
+                        "jsonpath": "*",
+                        "timeout": 60,
+                        "type": "http",
+                        "method": "GET",
+                        "body": {"field": "value"},
+                        "headers": {"Authorization": "Basic 123-AUTH-TOKEN"},
+                    }
+                }
+            )
+
 
 class MongoDBDataSourceInput(MongoDBDataSource):
     class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
 
+        @classmethod
+        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+            super().schema_extra(schema, model)
+            schema.update(
+                {
+                    "example": {
+                        "name": "mongo",
+                        "url": "mongodb+srv://cluster-0.foo.mongodb.net/example",
+                        "jsonpath": "*",
+                        "database": "foo",
+                        "collection": "bar",
+                        "query": {"a": "b"},
+                    }
+                }
+            )
+
 
 class SQLDataSourceInput(SQLDataSource):
     class Config(OmitFieldsConfig, DataSource.Config):
         omit_fields = ("id",)
+
+        @classmethod
+        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+            super().schema_extra(schema, model)
+            schema.update(
+                {
+                    "example": {
+                        "name": "sql",
+                        "url": "postgresql://pepega@localhost",
+                        "timeout": 20,
+                        "jsonpath": "[*]",
+                        "query": "SELECT * FROM table;",
+                    }
+                }
+            )
 
 
 class DataSourceUnion(BaseModel):
