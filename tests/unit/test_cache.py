@@ -5,7 +5,7 @@ import aioresponses
 import fakeredis.aioredis
 import pytest
 
-from apixy import app
+from apixy import app, cache
 from apixy.entities.datasource import HTTPDataSource
 
 
@@ -66,7 +66,9 @@ async def test_cache_disabled(
                 payload=["foo", "bar"],
             )
             data = await http_datasource.fetch_data()
-        cached = await redis.get(http_datasource.id)
+
+        key = cache.REDIS_DATASOURCE_CACHE_KEY.format(self=http_datasource)
+        cached = await redis.get(key)
 
     assert cached != data
     assert cached is None
@@ -87,4 +89,5 @@ async def test_cache_enabled_mock(
             )
             data = await http_datasource.fetch_data()
 
-        assert json.loads(await redis.get(http_datasource.id)) == data
+        key = cache.REDIS_DATASOURCE_CACHE_KEY.format(self=http_datasource)
+        assert json.loads(await redis.get(key)) == data
