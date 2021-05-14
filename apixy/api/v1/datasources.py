@@ -18,6 +18,7 @@ from apixy.entities.datasource import (
     MongoDBDataSource,
     SQLDataSource,
 )
+from apixy.entities.proxy_response import ProxyResponse
 from apixy.models import DataSourceModel
 
 from .shared import ApixyRouter, pagination_params
@@ -106,6 +107,22 @@ class DataSourcesView:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         await queryset.delete()
         return None
+
+    @router.get(PREFIX + "/{datasource_id}/test", response_model=ProxyResponse)
+    async def fest(self, datasource_id: int) -> ProxyResponse:
+        try:
+            model = await DataSourceModel.get(id=datasource_id)
+            pyd = await (model.to_pydantic()).fetch_data()
+
+            return ProxyResponse(
+                result={
+                    "size": 1,
+                    "data": pyd,
+                }
+            )
+
+        except DoesNotExist as err:
+            raise HTTPException(status.HTTP_404_NOT_FOUND) from err
 
 
 class DataSourcesDB:
