@@ -1,8 +1,9 @@
+import asyncio
 import logging
 from typing import Dict, Final, List, Optional, Union
 
+from aiohttp import ContentTypeError
 from fastapi import Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
 from starlette import status
@@ -14,6 +15,7 @@ from tortoise.transactions import in_transaction
 
 from apixy.entities.datasource import (
     DataSource,
+    DataSourceFetchError,
     DataSourceInput,
     DataSourceUnion,
     HTTPDataSource,
@@ -113,11 +115,15 @@ class DataSourcesView:
     async def test(self, datasource_id: int) -> JSONResponse:
         try:
             model = await DataSourceModel.get(id=datasource_id)
-            fetched = await (model.to_pydantic()).fetch_data()
-            return JSONResponse(status_code=200, content=jsonable_encoder(fetched))
+            fetched = asyncio.create_task((model.to_pydantic()).fetch_data())
+
+            fine = await fetched
+            return JSONResponse(status_code=200, content=fine)
 
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
+        except (DataSourceFetchError, asyncio.TimeoutError, ContentTypeError) as error:
+            raise HTTPException(status_code=422, detail="FetchError!") from error
 
 
 class DataSourcesDB:
