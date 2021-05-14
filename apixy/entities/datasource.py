@@ -150,7 +150,7 @@ class HTTPDataSourceInput(HTTPDataSource):
         omit_fields = ("id",)
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
             super().schema_extra(schema, model)
             schema.update(
                 {
@@ -172,7 +172,7 @@ class MongoDBDataSourceInput(MongoDBDataSource):
         omit_fields = ("id",)
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
             super().schema_extra(schema, model)
             schema.update(
                 {
@@ -193,7 +193,7 @@ class SQLDataSourceInput(SQLDataSource):
         omit_fields = ("id",)
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
             super().schema_extra(schema, model)
             schema.update(
                 {
