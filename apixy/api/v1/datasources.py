@@ -110,7 +110,7 @@ class DataSourcesView:
         return None
 
     @router.get(PREFIX + "/{datasource_id}/test")
-    async def fest(self, datasource_id: int) -> JSONResponse:
+    async def test(self, datasource_id: int) -> JSONResponse:
         try:
             model = await DataSourceModel.get(id=datasource_id)
             fetched = await (model.to_pydantic()).fetch_data()
