@@ -2,6 +2,8 @@ import logging
 from typing import Dict, Final, List, Optional, Union
 
 from fastapi import Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
@@ -18,7 +20,6 @@ from apixy.entities.datasource import (
     MongoDBDataSource,
     SQLDataSource,
 )
-from apixy.entities.proxy_response import ProxyResponse
 from apixy.models import DataSourceModel
 
 from .shared import ApixyRouter, pagination_params
@@ -108,18 +109,12 @@ class DataSourcesView:
         await queryset.delete()
         return None
 
-    @router.get(PREFIX + "/{datasource_id}/test", response_model=ProxyResponse)
-    async def fest(self, datasource_id: int) -> ProxyResponse:
+    @router.get(PREFIX + "/{datasource_id}/test")
+    async def fest(self, datasource_id: int) -> JSONResponse:
         try:
             model = await DataSourceModel.get(id=datasource_id)
-            pyd = await (model.to_pydantic()).fetch_data()
-
-            return ProxyResponse(
-                result={
-                    "size": 1,
-                    "data": pyd,
-                }
-            )
+            fetched = await (model.to_pydantic()).fetch_data()
+            return JSONResponse(status_code=200, content=jsonable_encoder(fetched))
 
         except DoesNotExist as err:
             raise HTTPException(status.HTTP_404_NOT_FOUND) from err
