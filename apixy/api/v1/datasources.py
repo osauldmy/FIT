@@ -134,6 +134,14 @@ class DataSourceStatsView:
     def first_of_list(value: List[Any]) -> Any:
         return value[0] if len(value) > 0 else None
 
+    @staticmethod
+    def ns_to_ms(values: List[Optional[float]]) -> Optional[float]:
+        if len(values) == 0:
+            return None
+        if values[0] is None:
+            return None
+        return values[0] * 1e-6
+
     @router.get(
         PREFIX + "/{datasource_id}/stats", response_model=DataSourceFetchLogSummary
     )
@@ -150,7 +158,7 @@ class DataSourceStatsView:
                 .first()
                 .values_list("average_time", flat=True),
                 # convert nanoseconds to milliseconds
-                lambda x: x[0] * 1e-6 if len(x) > 0 else None,
+                self.ns_to_ms,
             ),
             success_rate=(
                 queryset.filter(status=FetchLogger.FetchStatus.SUCCESS).count(),
