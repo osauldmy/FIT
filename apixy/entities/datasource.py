@@ -249,6 +249,8 @@ class FetchLogger:
             time_measured = time.perf_counter_ns() - time_start
             return result, time_measured
 
+        # not returning a callable but the actual result here
+        # that is to allow for using this in asyncio.wait/asyncio.gather
         return wrapped()
 
 
