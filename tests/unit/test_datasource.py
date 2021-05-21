@@ -442,6 +442,13 @@ class TestSQLDBDataSource:
             },  # localhost url
             {
                 "name": "sql",
+                "url": "postgresql://other@0.0.0.0:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books",
+            },  # localhost url
+            {
+                "name": "sql",
                 "url": "postgresql://other@google.com",
                 "timeout": 20,
                 "jsonpath": "[*]",

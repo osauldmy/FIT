@@ -139,8 +139,7 @@ class SQLDataSource(DataSource):
         """Validator for sql database url"""
         parsed_url = urlparse(url)
 
-        # if parsed_url.hostname in ("localhost", "0.0.0.0"):
-        if parsed_url.hostname in ("localhost", "127.0.0.1"):
+        if parsed_url.hostname in ("localhost", "127.0.0.1", "0.0.0.0"):  # nosec
             raise ValueError("SQL database url cannot be localhost address")
         localhost = socket.gethostname()
         local_address = socket.getaddrinfo(localhost, parsed_url.port)
