@@ -5,6 +5,7 @@ import aioresponses
 import pydantic
 import pytest
 
+from apixy.config import SETTINGS
 from apixy.entities.datasource import HTTPDataSource, MongoDBDataSource, SQLDataSource
 from apixy.models import DataSourceModel
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
@@ -443,6 +444,14 @@ class TestSQLDBDataSource:
             {
                 "name": "sql",
                 "url": "postgresql://other@0.0.0.0:5000",
+                "timeout": 20,
+                "jsonpath": "[*].name",
+                "query": "SELECT * FROM books",
+            },  # localhost url
+            {
+                "name": "sql",
+                "url": f"postgresql://other@{SETTINGS.POSTGRES_HOST}"
+                f":{SETTINGS.POSTGRES_PORT}",
                 "timeout": 20,
                 "jsonpath": "[*].name",
                 "query": "SELECT * FROM books",

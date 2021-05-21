@@ -15,6 +15,7 @@ import sqlparse
 from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
 from apixy.cache import redis_cache
+from apixy.config import SETTINGS
 from apixy.entities.shared import ForbidExtraModel, OmitFieldsConfig
 
 from .validators import validate_nonzero_length
@@ -139,15 +140,31 @@ class SQLDataSource(DataSource):
         """Validator for sql database url"""
         parsed_url = urlparse(url)
 
-        if parsed_url.hostname in ("localhost", "127.0.0.1", "0.0.0.0"):  # nosec
+        if parsed_url.hostname in (
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",  # nosec
+            SETTINGS.POSTGRES_HOST,
+        ):
             raise ValueError("SQL database url cannot be localhost address")
+
         localhost = socket.gethostname()
-        local_address = socket.getaddrinfo(localhost, parsed_url.port)
+        forbidden_addresses = socket.getaddrinfo(localhost, SETTINGS.POSTGRES_PORT)
+        if SETTINGS.POSTGRES_HOST not in (
+            "",
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",  # nosec
+        ):
+            forbidden_addresses.extend(
+                socket.getaddrinfo(SETTINGS.POSTGRES_HOST, SETTINGS.POSTGRES_PORT)
+            )
+
         try:
             target_address = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
         except socket.gaierror as socket_error:
             raise ValueError("Invalid destination url") from socket_error
-        for (_, _, _, _, socket_address) in local_address:
+        for (_, _, _, _, socket_address) in forbidden_addresses:
             for (_, _, _, _, r_socket_address) in target_address:
                 if r_socket_address[0] == socket_address[0]:
                     raise ValueError("SQL database url cannot be localhost address")
