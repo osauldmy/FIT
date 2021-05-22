@@ -7,8 +7,7 @@ from starlette.responses import Response
 from tortoise.functions import Avg
 
 from apixy.config import SETTINGS
-from apixy.entities.datasource import DataSourceFetchLogSummary
-from apixy.entities.project import FetchLogger
+from apixy.entities.fetch_logger import DataSourceFetchLogSummary, FetchLogger
 from apixy.models import DataSourceModel, FetchLogModel
 
 

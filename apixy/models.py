@@ -9,7 +9,7 @@ from tortoise.models import Model
 
 from apixy.entities.datasource import DATA_SOURCES
 from apixy.entities.datasource import DataSource as DataSourceEntity
-from apixy.entities.datasource import FetchLogger
+from apixy.entities.fetch_logger import FetchLogger
 from apixy.entities.project import Project as ProjectEntity
 from apixy.entities.project import (
     ProjectWithDataSources as ProjectWithDataSourcesEntity,

@@ -15,13 +15,13 @@ from tortoise.transactions import in_transaction
 from apixy.entities.datasource import (
     DataSource,
     DataSourceFetchError,
-    DataSourceFetchLogSummary,
     DataSourceInput,
     DataSourceUnion,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
 )
+from apixy.entities.fetch_logger import DataSourceFetchLogSummary
 from apixy.models import DataSourceModel
 
 from .shared import ApixyRouter, DBFetchLogger, pagination_params

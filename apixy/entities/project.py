@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 
 from .datasource import (
     DataSourceFetchError,
-    FetchLogger,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
 )
+from .fetch_logger import FetchLogger
 from .merge_strategy import MERGE_STRATEGY_MAPPING
 from .proxy_response import ProxyResponse
 from .shared import ForbidExtraModel, OmitFieldsConfig
