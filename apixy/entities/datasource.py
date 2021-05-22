@@ -7,10 +7,14 @@ from typing import Annotated, Any, Dict, Final, Literal, Mapping, Optional, Type
 from urllib.parse import urlparse
 
 import aiohttp
+import aiomysql
+import aiosqlite
 import async_timeout
+import asyncpg
 import databases
 import jmespath
 import motor.motor_asyncio
+import pymongo.errors
 import sqlparse
 from pydantic import AnyUrl, BaseModel, Field, HttpUrl, validator
 
@@ -122,6 +126,9 @@ class MongoDBDataSource(DataSource):
             )
             try:
                 data = await cursor.to_list(None)
+            except pymongo.errors.PyMongoError as error:
+                logger.exception(error)
+                raise DataSourceFetchError from error
             finally:
                 await cursor.close()
 
@@ -191,7 +198,16 @@ class SQLDataSource(DataSource):
             try:
                 async with databases.Database(self.url) as database:
                     rows = await database.fetch_all(query=self.query)
-            except RuntimeError as error:
+            except KeyError as error:
+                logger.exception(error)
+                raise DataSourceFetchError(
+                    f"Unsupported backend: {self.url}"
+                ) from error
+            except (
+                asyncpg.exceptions.PostgresError,
+                aiomysql.MySQLError,
+                aiosqlite.Error,
+            ) as error:
                 logger.exception(error)
                 raise DataSourceFetchError from error
 
