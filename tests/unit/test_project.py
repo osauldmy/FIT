@@ -5,6 +5,7 @@ import pytest
 from pydantic.error_wrappers import ValidationError
 
 from apixy.entities.datasource import DATA_SOURCES
+from apixy.entities.fetch_logger import DataSourceFetchLogSummary
 from apixy.entities.project import FetchLogger, Project, ProjectWithDataSources
 from tests.unit.datasource_json_responses.spacex_rockets import PAYLOAD_SPACEX_ROCKETS
 
@@ -16,6 +17,9 @@ class MockLogger(FetchLogger):
         nanoseconds: int,
         fetch_status: FetchLogger.FetchStatus,
     ) -> None:
+        pass
+
+    async def get_stats(self, datasource_id: int) -> DataSourceFetchLogSummary:
         pass
 
 
