@@ -7,6 +7,14 @@ Welcome to Apixy's documentation!
 =================================
 
 .. toctree::
+   :caption: User Documentation
+   :maxdepth: 2
+
+   user/about
+   user/installation
+   user/usage
+
+.. toctree::
    :maxdepth: 3
    :caption: Contents:
 
