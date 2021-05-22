@@ -12,6 +12,8 @@ Local development
 ------------------
 In order to start development right away:
 
+::
+
  1. git clone git@gitlab.fit.cvut.cz:apixy/apixy-be
  2. cd apixy-be
  3. python -m venv venv
@@ -25,20 +27,35 @@ In order to start development right away:
 Running the web server locally
 -------------------------------
 Copy the .env.sample file and edit the values:
+
+::
+
  cp .env.sample .env
 
 Run the db and migrate containers:
+
+::
+
  docker-compose up --build db migrate
 
 Run the api component locally (--reload for autoreload on file change):
+
+::
+
  uvicorn apixy.app:app --reload
 
 Running the entire app in docker
 ---------------------------------
 Copy the .env.sample file and edit the values:
+
+::
+
  cp .env.sample .env
 
 Run the app:
+
+::
+
  docker-compose up --build
 
 
@@ -48,6 +65,8 @@ Apixy Frontend
 Local development
 ------------------
 In order to start development right away:
+
+::
 
  1. git clone git@gitlab.fit.cvut.cz:apixy/apixy-fe
  2. cd apixy-fe
@@ -61,6 +80,9 @@ In order to start development right away:
 
 Running the web server locally
 -------------------------------
+
+::
+
  1. cd apixy-fe
  2. npm install
  3. npm start
@@ -69,11 +91,16 @@ Running the web server locally
 
 Specify API url in case of need with ENV var :red:`REACT_APP_APIXY_API`
 
+::
+
  1. export REACT_APP_APIXY_API="http://foo.bar:port/api/v42"
  2. npm start
 
 Creating optimised development build
 ------------------------------------
+
+::
+
  1. npm install -g serve
  2. cd apixy-fe
  3. npm run build
