@@ -1,7 +1,6 @@
 import asyncio
 import logging
-from collections import OrderedDict
-from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union
+from typing import Any, Dict, Final, List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
@@ -150,39 +149,38 @@ class DataSourceStatsView:
     ) -> DataSourceFetchLogSummary:
         queryset = FetchLogModel.filter(datasource_id=datasource_model.id)
         total = await queryset.count()
-        queries: OrderedDict[str, Tuple[Any, Callable[[Any], Any]]] = OrderedDict(
-            average_success_time=(
-                queryset.filter(status=FetchLogger.FetchStatus.SUCCESS)
+        return DataSourceFetchLogSummary(
+            calls=total,
+            average_success_time=self.ns_to_ms(
+                await queryset.filter(status=FetchLogger.FetchStatus.SUCCESS)
                 .group_by()
                 .annotate(average_time=Avg("nanoseconds"))
                 .first()
                 .values_list("average_time", flat=True),
-                # convert nanoseconds to milliseconds
-                self.ns_to_ms,
             ),
-            success_rate=(
-                queryset.filter(status=FetchLogger.FetchStatus.SUCCESS).count(),
-                lambda x: self.percentage_of(x, total),
+            success_rate=self.percentage_of(
+                await queryset.filter(status=FetchLogger.FetchStatus.SUCCESS).count(),
+                total,
             ),
-            timeout_rate=(
-                queryset.filter(status=FetchLogger.FetchStatus.TIMEOUT).count(),
-                lambda x: self.percentage_of(x, total),
+            timeout_rate=self.percentage_of(
+                await queryset.filter(status=FetchLogger.FetchStatus.TIMEOUT).count(),
+                total,
             ),
-            error_rate=(
-                queryset.filter(status=FetchLogger.FetchStatus.ERROR).count(),
-                lambda x: self.percentage_of(x, total),
+            error_rate=self.percentage_of(
+                await queryset.filter(status=FetchLogger.FetchStatus.ERROR).count(),
+                total,
             ),
-            first_call=(
-                queryset.order_by("created").first().values_list("created", flat=True),
-                self.first_of_list,
+            first_call=self.first_of_list(
+                await queryset.order_by("created")
+                .first()
+                .values_list("created", flat=True),
             ),
-            last_call=(
-                queryset.order_by("-created").first().values_list("created", flat=True),
-                self.first_of_list,
+            last_call=self.first_of_list(
+                await queryset.order_by("-created")
+                .first()
+                .values_list("created", flat=True),
             ),
         )
-        results = {key: value[1](await value[0]) for (key, value) in queries.items()}
-        return DataSourceFetchLogSummary(calls=total, **results)
 
     @router.get(PREFIX + "/{datasource_id}/test")
     async def test(self, datasource_id: int) -> JSONResponse:
