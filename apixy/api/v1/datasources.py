@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Dict, Final, List, Optional, Union
+from typing import Dict, Final, List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
@@ -8,7 +8,6 @@ from fastapi_utils.cbv import cbv
 from starlette import status
 from starlette.responses import Response
 from tortoise.exceptions import DoesNotExist, FieldError, IntegrityError
-from tortoise.functions import Avg
 from tortoise.query_utils import Q
 from tortoise.queryset import QuerySet
 from tortoise.transactions import in_transaction
@@ -19,14 +18,13 @@ from apixy.entities.datasource import (
     DataSourceFetchLogSummary,
     DataSourceInput,
     DataSourceUnion,
-    FetchLogger,
     HTTPDataSource,
     MongoDBDataSource,
     SQLDataSource,
 )
-from apixy.models import DataSourceModel, FetchLogModel
+from apixy.models import DataSourceModel
 
-from .shared import ApixyRouter, pagination_params
+from .shared import ApixyRouter, DBFetchLogger, pagination_params
 
 logger = logging.getLogger(__name__)
 
@@ -120,67 +118,13 @@ class DataSourcesView:
         await queryset.delete()
         return None
 
-
-@cbv(router)
-class DataSourceStatsView:
-    @staticmethod
-    def percentage_of(value: int, total_count: int) -> Optional[float]:
-        if total_count == 0:
-            return None
-        return 100 * value / total_count
-
-    @staticmethod
-    def first_of_list(value: List[Any]) -> Any:
-        return value[0] if len(value) > 0 else None
-
-    @staticmethod
-    def ns_to_ms(values: List[Optional[float]]) -> Optional[float]:
-        if len(values) == 0:
-            return None
-        if values[0] is None:
-            return None
-        return values[0] * 1e-6
-
     @router.get(
         PREFIX + "/{datasource_id}/stats", response_model=DataSourceFetchLogSummary
     )
     async def stats(
         self, datasource_model: DataSourceModel = Depends(get_datasource_by_id)
     ) -> DataSourceFetchLogSummary:
-        queryset = FetchLogModel.filter(datasource_id=datasource_model.id)
-        total = await queryset.count()
-        return DataSourceFetchLogSummary(
-            calls=total,
-            average_success_time=self.ns_to_ms(
-                await queryset.filter(status=FetchLogger.FetchStatus.SUCCESS)
-                .group_by()
-                .annotate(average_time=Avg("nanoseconds"))
-                .first()
-                .values_list("average_time", flat=True),
-            ),
-            success_rate=self.percentage_of(
-                await queryset.filter(status=FetchLogger.FetchStatus.SUCCESS).count(),
-                total,
-            ),
-            timeout_rate=self.percentage_of(
-                await queryset.filter(status=FetchLogger.FetchStatus.TIMEOUT).count(),
-                total,
-            ),
-            error_rate=self.percentage_of(
-                await queryset.filter(status=FetchLogger.FetchStatus.ERROR).count(),
-                total,
-            ),
-            first_call=self.first_of_list(
-                await queryset.order_by("created")
-                .first()
-                .values_list("created", flat=True),
-            ),
-            last_call=self.first_of_list(
-                await queryset.order_by("-created")
-                .first()
-                .values_list("created", flat=True),
-            ),
-        )
+        return await DBFetchLogger.get_stats(datasource_model.id)
 
     @router.get(PREFIX + "/{datasource_id}/test")
     async def test(self, datasource_id: int) -> JSONResponse:

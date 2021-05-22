@@ -231,6 +231,10 @@ class FetchLogger:
     ) -> None:
         """Adds a log entry about a fetch attempt."""
 
+    @abstractmethod
+    async def get_stats(self, datasource_id: int) -> DataSourceFetchLogSummary:
+        """Aggregates statistics from logs."""
+
     @staticmethod
     def fetch_timer(coroutine: Callable[[], Awaitable[Any]]) -> Any:
         """
