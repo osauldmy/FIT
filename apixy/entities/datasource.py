@@ -5,7 +5,6 @@ import logging
 import socket
 import time
 from abc import abstractmethod
-from urllib.parse import urlparse
 from datetime import datetime
 from enum import IntEnum, auto
 from functools import wraps
@@ -23,6 +22,7 @@ from typing import (
     Type,
     Union,
 )
+from urllib.parse import urlparse
 
 import aiohttp
 import async_timeout
