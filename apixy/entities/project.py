@@ -55,13 +55,17 @@ class ProjectWithDataSources(Project):
                 status = FetchLogger.FetchStatus.SUCCESS
             else:
                 logger.exception(result)
+
                 status = FetchLogger.FetchStatus.ERROR
-                # TODO: `datasource.url` -> `datasource.name` after caching MR merge.
+                key = "{}: ({})".format(
+                    self.datasources[index].name, self.datasources[index].url
+                )
+
                 if isinstance(result, asyncio.TimeoutError):
-                    errors.append({self.datasources[index].url: "Timeout!"})
+                    errors.append({key: "Timeout!"})
                     status = FetchLogger.FetchStatus.TIMEOUT
                 elif isinstance(result, DataSourceFetchError):
-                    errors.append({self.datasources[index].url: "Fetch error!"})
+                    errors.append({key: str(result) or "Fetch error!"})
 
             if self.datasources[index].id is not None:
                 asyncio.create_task(
