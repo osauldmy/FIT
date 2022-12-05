@@ -1,0 +1,92 @@
+---
+image: python:3.9
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
+  PROJECT_SOURCE_DIR: "apixy"
+  TEST_DIR: "tests"
+  IMAGE: apixy-be
+
+cache: &global_cache
+  key: "$CI_JOB_STAGE"
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python -V
+  - python -m venv venv
+  - source venv/bin/activate
+
+stages:
+  - lint
+  - build
+  - test
+  - docs
+
+lint:
+  stage: lint
+  cache:
+    <<: *global_cache
+    paths:
+      - $PRE_COMMIT_HOME
+      - .cache/pip
+      - venv/
+  script:
+    - pip install pre-commit
+    - pre-commit run --all-files
+
+test_unit:
+  stage: test
+  script:
+    - pip install -r requirements.txt -r requirements-test.txt
+    - python -m pytest -v $TEST_DIR/unit
+
+test_api:
+  stage: test
+  script:
+    - pip install -r requirements.txt -r requirements-test.txt
+    - python -m pytest -v $TEST_DIR/api
+
+test_integration:
+  stage: test
+  image: docker/compose:alpine-1.29.1
+  services:
+    - docker:20-dind
+  before_script: []
+  cache: {}
+  script:
+    - cp .env.testing .env
+    - docker load -i image/$IMAGE.tar
+    - >
+      docker-compose
+      -f docker-compose.yml
+      -f docker-compose.itest.override.yml
+      up -d api
+    - >
+      docker-compose
+      -f docker-compose.yml
+      -f docker-compose.itest.override.yml
+      up tests
+
+sphinx:
+  stage: docs
+  script:
+    - pip install -r requirements.txt -r requirements-docs.txt
+    - make html -C docs
+
+docker_build:
+  stage: build
+  image: docker:20
+  services:
+    - docker:20-dind
+  cache: {}
+  before_script: []
+  script:
+    - docker build -t $IMAGE .
+    - mkdir image
+    - docker save $IMAGE > image/$IMAGE.tar
+  artifacts:
+    paths:
+      - image

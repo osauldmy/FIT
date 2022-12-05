@@ -1,0 +1,61 @@
+---
+version: "3"
+services:
+
+  api:
+    build: .
+    ports:
+      - 8000:8000
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_URI=redis://redis:6379
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_started
+    command: [
+      "sh",
+      "-c",
+      "uvicorn apixy.app:app --host 0.0.0.0 --reload --reload-dir=apixy"
+    ]
+
+  db:
+    image: postgres:13
+    ports:
+      - 127.0.0.1:5432:5432
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - apixy_db:/var/lib/postgresql
+    healthcheck:
+      test: "pg_isready --user $POSTGRES_USER"
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 127.0.0.1:6379:6379
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command: "aerich upgrade"
+
+volumes:
+  apixy_db:
