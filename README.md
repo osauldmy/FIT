@@ -20,4 +20,4 @@ BI-VWM: Searching the web and multimedia (Information retrieval)
 
 BI-ZUM: Elements of AI
 
-**todo**: add BEZ, VZD
+**todo**: add VZD

@@ -1,0 +1,48 @@
+== Zadání
+
+. Stáhněte si např. tento obrázek ve formátu TGA (rozbalte zip): link:{dir}/obrazek_tga.zip[obrazek.zip]. (link:{dir}/homer-simpson_tga.zip[homer-simpson.zip], link:{dir}/UCM8.TGA[ucm8.tga])
+. Napište program, který zkopíruje hlavičku a *zašifruje* část souboru s obrazovými daty pomocí AES v módu ECB. Výstupní soubor se bude jmenovat `(původní_jméno)_ecb.tga`.
+. Napište program, který *dešifruje* obrázek zašifrovaný prvním programem. Výstupní soubor se bude jmenovat `(původní_jméno)_dec.tga`
+** Porovnejte původní obrázek a jeho zašifrovanou podobu a vysvětlete svá zjištění.
+. Změňte pro šifrování i dešifrování použitý operační mód na *CBC* a vytvořte `(původní_jméno)_cbc.tga` a `(původní_jméno)_cbc_dec.tga` (upřesní cvičící).
+** Porovnejte původní obrázek a jeho zašifrovanou podobu a vysvětlete svá zjištění.
+. *Na první řádek zdrojáku dejte komentář se jménem autora*!
+
+TIP: Volbu šifry a operačního módu zjistěte z dokumentace `EVP_EncryptInit_ex` (`man EVP_EncryptInit_ex`).
+
+=== Formát obrázků TGA (zjednodušeno)
+
+Jednotky: bajty (slabiky)
+
+[options="autowidth"]
+|====
+h| Pozice h| Délka h| Význam
+| 0      | 1   | Délka obrazového ID
+| 1      | 1   | Typ barevné mapy
+| 2      | 1   | Typ obrázku
+| 3      | 2   | Počátek barevné mapy
+| 5      | 2   | Délka barevné mapy
+| 7      | 1   | Bitová hloubka položek barevné mapy
+| 8      | 10  | Specifikace obrázku
+<.^| 18     <.^| ... | Obrazový identifikátor (nepovinné) +
+                 Barevná mapa (nepovinné)
+| *x* ^| do konce souboru | *Obrazová data*
+|====
+
+Pořadí bytů je little-endian. Barevnou mapu ani obrazové ID není potřeba dále zpracovávat, je potřeba je jen správně přeskočit a nešifrovat je.
+Šifrovat se musí až samotná obrazová data, nic jiného.
+
+TIP: Detailní popis formátu obrázku je dostupný například link:http://www.paulbourke.net/dataformats/tga/[zde].
+
+=== Postup šifrování delšího souboru, pole, atd.
+
+. Inicializace knihovny, alokace kontextu (viz minulé cvičení)
+. `EVP_EncryptInit_ex(ctx, type, NULL, key, iv);`
+. Cyklus: dokud mám data
+.. Přečti obrazová data do pole `ot` (např. `fread`, ...), délka přečtených dat je `otLength`.
+.. `EVP_EncryptUpdate(ctx,  st, &stLength, ot, otLength);`
+.. Zapiš do výstupního souboru obsah pole `st` délky `stLength` (může se lišit od `otLength`).
+. `EVP_EncryptFinal_ex(ctx,  st, &stLength);` – dokončení šifrování posledního bloku
+. Zapiš do výstupního souboru obsah pole `st` délky `stLength`
+
+TIP: U blokových šifer je ve výchozím nastavení zapnuto zarovnání (padding). Proto může být šifrovaný soubor větší než původní.

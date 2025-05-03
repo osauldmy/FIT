@@ -1,0 +1,35 @@
+#!/bin/bash
+
+MODES=(ecb xts cbc cfb ofb ctr)
+
+IMAGE_VIEWER=display
+
+make
+
+for image in *.tga; do
+  echo "$image"
+
+  for mode in "${MODES[@]}"; do
+
+    echo -e "\t$mode"
+
+    ./block e "$mode" "${image}"
+
+    if [ $? -eq 0 ]; then
+      $IMAGE_VIEWER "${image%.*}_${mode}_e.tga"
+    else
+      continue
+    fi
+
+    ./block d "$mode" "${image%.*}_${mode}_e.tga"
+
+    if [ $? -eq 0 ]; then
+      $IMAGE_VIEWER "${image%.*}_${mode}_e_${mode}_d.tga"
+
+      # check original and encrypted and then decrypted files are equal
+      diff "${image}" "${image%.*}_${mode}_e_${mode}_d.tga" || true
+      rm "${image%.*}_${mode}_e.tga" "${image%.*}_${mode}_e_${mode}_d.tga"
+    fi
+
+  done
+done

@@ -1,0 +1,40 @@
+== Zadání úkolu (4 body)
+
+=== Hashovací funkce (Task2_hash)
+
+Napište program, který nalezne libovolnou zprávu, jejíž *hash (SHA-512) začíná* zleva na posloupnost nulových bitů:
+
+* Počet nulových bitů je zadán celým číslem jako parametrem na příkazové řádce.
+* Pořadí bitů je big-endian: Bajt 0 od MSB do LSB, Bajt 1 od MSB do LSB, ..., poslední bajt od MSB do LSB.
+* Součástí odevzdaného řešení může být (v závislosti na cvičícím) i jednoduchý `Makefile`.
+* Návratové hodnoty programu jsou standardní, nula v případě úspěchu, jinak nenula.
+* Výstupem jsou dva *hexadecimální řetězce* oddělené novou řádkou:
+** První řádek obsahuje data, pro které byl nalezen příslušný hash
+** Druhý řádek obsahuje hash této zprávy
+* Vykreslete graf doby hledání zprávy v závislosti na vstupním parametru (počet bitů kolize).
+* Odhadněte dobu hledání zprávy, jejíž hash je tvořena posloupností 512 nulovými bity.
+
+=== Ukázkové vstupy a výstupy
+
+[source,bash]
+----
+$ ./task2 2
+5e5001f6d9da81647f9becc1f1da9418
+1935b2b631924b1f19d26450bdf5cf53dd4a6016486ee2b0eca69e6f7119483b37fd19e607216fc429d9232c69eb53e8025c0517a1d6e4e7595ee3921f0ed4e7
+----
+
+[source,bash]
+----
+$ ./task2 4
+48fbb3cbd244b63a9e87a22511408aab
+012c50fd26305fe31f554e965c014155dcb5bb7c8e37110f569ba9c3bfd629da51e8ae70969a6850e5c5513f9bf6e4116cd4898bf55c1180ee2fca727eae167c
+----
+
+[source,bash]
+----
+$ ./task2 11
+3ebea8ffdbe51c6a10636754f08a4dfb
+000420f18499497150d5874d357eb2b985d5a3b57e94b96b4547a4fb89470b1da03fe4712c4d73d72bb0eade085e3c88eacf7fe6c15c89ddfba0eda4b582f82d
+----
+
+TIP: Program by měl ustát jakýkoliv (i zákeřný) vstup.
