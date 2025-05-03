@@ -1,0 +1,10 @@
+XXXXXXXXXXXXXXXXXXXXXXXXXX
+X                        X
+X                        X
+X XXXXXXXXXXXXXXXXXXXXXX X
+X   X   X   X   X   X    X
+X X   X   X   X   X   X  X    
+X                        X
+XXXXXXXXXXXXXXXXXXXXXXXXXX
+start 1, 5
+end 23, 2

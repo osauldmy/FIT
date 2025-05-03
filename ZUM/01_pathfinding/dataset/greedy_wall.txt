@@ -1,0 +1,9 @@
+XXXXXXXXXXXXXXXXXXX
+X                 X
+X XXXXXXXXXXXXXXXXX
+X                 X
+X                 X
+X                 X
+XXXXXXXXXXXXXXXXXXX
+start 17, 4
+end 17, 1

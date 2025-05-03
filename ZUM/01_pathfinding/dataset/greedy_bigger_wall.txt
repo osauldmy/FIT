@@ -1,0 +1,30 @@
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+X                                             X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+start 45, 26
+end 45, 7
